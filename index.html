@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J.S.A. ソムリエ一次試験 直前クイズ・アンチョコ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wine:#4A1220;          /* 深いワインレッド */
+  --bordeaux:#7B2D43;      /* ボルドー */
+  --paper:#FAF6EE;         /* 紙クリーム */
+  --gold:#C9A227;          /* ゴールド */
+  --ink:#2B2024;           /* インク */
+  --ok:#3E7C4F;            /* 正解 */
+  --ng:#A8323E;            /* 不正解 */
+  --line:#E4DCCB;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px}
+body{
+  font-family:"Zen Kaku Gothic New",system-ui,sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  min-height:100vh;
+  line-height:1.7;
+}
+.serif{font-family:"Shippori Mincho",serif}
+
+/* ===== ヘッダー ===== */
+header{
+  background:var(--wine);
+  color:var(--paper);
+  padding:20px 16px 0;
+  border-bottom:3px solid var(--gold);
+}
+.head-inner{max-width:860px;margin:0 auto}
+.eyebrow{
+  font-size:.72rem;letter-spacing:.32em;color:var(--gold);
+  text-transform:uppercase;margin-bottom:4px;
+}
+h1{
+  font-family:"Shippori Mincho",serif;
+  font-weight:800;font-size:clamp(1.25rem,4vw,1.7rem);
+  letter-spacing:.06em;line-height:1.4;
+}
+h1 small{display:block;font-size:.78rem;font-weight:600;color:#D9C9B0;letter-spacing:.14em;margin-top:2px}
+nav{display:flex;gap:4px;margin-top:16px}
+.tab{
+  background:transparent;border:none;color:#CDB8A6;cursor:pointer;
+  font-family:inherit;font-size:.9rem;font-weight:700;letter-spacing:.08em;
+  padding:10px 18px;border-radius:8px 8px 0 0;
+}
+.tab[aria-selected="true"]{background:var(--paper);color:var(--wine)}
+.tab:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+
+main{max-width:860px;margin:0 auto;padding:24px 16px 64px}
+
+/* ===== 共通パーツ ===== */
+.stars{color:var(--gold);letter-spacing:.1em;font-size:.85rem}
+.btn{
+  font-family:inherit;font-weight:700;font-size:1rem;cursor:pointer;
+  border:none;border-radius:10px;padding:13px 28px;letter-spacing:.06em;
+  background:var(--wine);color:var(--paper);
+  transition:transform .08s ease, background .15s ease;
+}
+.btn:hover{background:var(--bordeaux)}
+.btn:active{transform:scale(.98)}
+.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn.ghost{background:transparent;color:var(--wine);border:1.5px solid var(--bordeaux)}
+.btn.ghost:hover{background:#F1E8DA}
+.hidden{display:none!important}
+
+/* ===== スタート画面 ===== */
+.card{
+  background:#fff;border:1px solid var(--line);border-radius:14px;
+  padding:26px 24px;box-shadow:0 2px 10px rgba(74,18,32,.06);
+}
+.start-lead{font-size:.95rem;color:#5d5350;margin-bottom:20px}
+fieldset{border:none;margin-bottom:22px}
+legend{
+  font-family:"Shippori Mincho",serif;font-weight:800;font-size:1rem;
+  color:var(--wine);margin-bottom:10px;letter-spacing:.08em;
+}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  font-family:inherit;font-size:.85rem;font-weight:500;cursor:pointer;
+  border:1.5px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:999px;padding:7px 15px;transition:all .12s ease;
+}
+.chip[aria-pressed="true"]{
+  background:var(--bordeaux);color:#fff;border-color:var(--bordeaux);font-weight:700;
+}
+.chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.count-note{font-size:.8rem;color:#8a7f78;margin-top:8px}
+
+/* ===== クイズ画面 ===== */
+.quiz-top{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;gap:12px;flex-wrap:wrap;
+}
+.progress-label{font-size:.85rem;font-weight:700;color:var(--bordeaux);letter-spacing:.08em}
+.timer{
+  font-family:"Shippori Mincho",serif;font-weight:800;font-size:1.15rem;
+  color:var(--wine);background:#fff;border:1.5px solid var(--gold);
+  border-radius:8px;padding:4px 14px;min-width:96px;text-align:center;
+  font-variant-numeric:tabular-nums;
+}
+.dots{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.dot{
+  width:14px;height:14px;border-radius:50%;
+  background:#E8E0D0;border:1.5px solid #D5C9B2;
+}
+.dot.now{background:var(--gold);border-color:var(--gold)}
+.dot.ok{background:var(--ok);border-color:var(--ok)}
+.dot.ng{background:var(--ng);border-color:var(--ng)}
+
+.q-meta{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.q-cat{
+  font-size:.72rem;font-weight:700;letter-spacing:.12em;
+  background:var(--wine);color:var(--paper);
+  border-radius:4px;padding:3px 10px;
+}
+.q-text{
+  font-family:"Shippori Mincho",serif;font-weight:800;
+  font-size:clamp(1.05rem,3vw,1.3rem);line-height:1.6;margin-bottom:20px;
+}
+.choices{display:grid;gap:10px}
+.choice{
+  font-family:inherit;font-size:.98rem;text-align:left;cursor:pointer;
+  background:#fff;border:1.5px solid var(--line);border-radius:10px;
+  padding:13px 16px 13px 14px;display:flex;gap:12px;align-items:flex-start;
+  transition:border-color .12s ease, background .12s ease;
+}
+.choice:hover:not(:disabled){border-color:var(--bordeaux);background:#FBF3F0}
+.choice:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+.choice .key{
+  flex:0 0 auto;font-weight:800;color:var(--bordeaux);
+  font-family:"Shippori Mincho",serif;
+}
+.choice:disabled{cursor:default;opacity:.92}
+.choice.correct{border-color:var(--ok);background:#EEF6EF;box-shadow:inset 0 0 0 1px var(--ok)}
+.choice.wrong{border-color:var(--ng);background:#FAEDEE;box-shadow:inset 0 0 0 1px var(--ng)}
+
+.feedback{
+  margin-top:18px;border-radius:10px;padding:14px 16px;font-size:.92rem;
+  border-left:4px solid;
+}
+.feedback.good{background:#EEF6EF;border-color:var(--ok)}
+.feedback.bad{background:#FAEDEE;border-color:var(--ng)}
+.feedback .verdict{font-weight:800;font-family:"Shippori Mincho",serif;margin-bottom:4px}
+.feedback.good .verdict{color:var(--ok)}
+.feedback.bad .verdict{color:var(--ng)}
+.next-row{margin-top:18px;text-align:right}
+
+/* ===== 結果画面 ===== */
+.result-hero{text-align:center;padding:10px 0 22px}
+.result-grade{
+  font-family:"Shippori Mincho",serif;font-weight:800;
+  font-size:clamp(1.5rem,5vw,2rem);color:var(--wine);margin-bottom:6px;
+}
+.result-score{
+  font-family:"Shippori Mincho",serif;font-weight:800;
+  font-size:clamp(2.4rem,9vw,3.4rem);color:var(--bordeaux);line-height:1.2;
+  font-variant-numeric:tabular-nums;
+}
+.result-score small{font-size:.4em;color:#8a7f78;font-weight:600}
+.result-sub{font-size:.9rem;color:#5d5350;margin-top:6px}
+.pass-line{
+  display:inline-block;margin-top:12px;font-size:.82rem;font-weight:700;
+  border-radius:999px;padding:5px 16px;letter-spacing:.06em;
+}
+.pass-line.pass{background:#EEF6EF;color:var(--ok);border:1.5px solid var(--ok)}
+.pass-line.fail{background:#FAEDEE;color:var(--ng);border:1.5px solid var(--ng)}
+.review-h{
+  font-family:"Shippori Mincho",serif;font-weight:800;color:var(--wine);
+  font-size:1.05rem;margin:26px 0 12px;letter-spacing:.08em;
+}
+.review-item{
+  background:#fff;border:1px solid var(--line);border-left:4px solid var(--ng);
+  border-radius:10px;padding:14px 16px;margin-bottom:10px;font-size:.9rem;
+}
+.review-item.okitem{border-left-color:var(--ok)}
+.review-item .rq{font-weight:700;margin-bottom:4px}
+.review-item .ra{color:var(--ok);font-weight:700}
+.review-item .rx{color:#6b605b;margin-top:4px;font-size:.85rem}
+.result-actions{display:flex;gap:10px;justify-content:center;margin-top:26px;flex-wrap:wrap}
+
+/* ===== 暗記シート ===== */
+details.sheet{
+  background:#fff;border:1px solid var(--line);border-radius:12px;
+  margin-bottom:12px;overflow:hidden;
+}
+details.sheet summary{
+  cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;
+  padding:14px 18px;font-family:"Shippori Mincho",serif;font-weight:800;
+  font-size:1rem;color:var(--wine);
+}
+details.sheet summary::-webkit-details-marker{display:none}
+details.sheet summary::after{
+  content:"＋";margin-left:auto;color:var(--gold);font-weight:700;
+}
+details.sheet[open] summary::after{content:"－"}
+details.sheet summary:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.sheet-body{padding:0 18px 18px;font-size:.9rem}
+.sheet-body table{width:100%;border-collapse:collapse;margin-top:4px}
+.sheet-body th,.sheet-body td{
+  text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);
+  vertical-align:top;
+}
+.sheet-body th{
+  background:#F6F0E3;color:var(--bordeaux);font-size:.78rem;
+  letter-spacing:.08em;white-space:nowrap;
+}
+.sheet-body td:first-child{font-weight:700;white-space:nowrap}
+.kpoint{
+  background:#FBF6E8;border:1px dashed var(--gold);border-radius:8px;
+  padding:10px 14px;margin-top:12px;font-size:.85rem;
+}
+.kpoint b{color:var(--bordeaux)}
+
+footer{
+  text-align:center;font-size:.75rem;color:#9b9088;padding:0 16px 36px;
+}
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important}
+}
+@media (max-width:480px){
+  .btn{width:100%}
+  .next-row{text-align:center}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-inner">
+    <p class="eyebrow">J.S.A. Sommelier — Primary Exam</p>
+    <h1>ソムリエ一次試験 直前クイズ<small>頻出論点アンチョコ｜点数・タイマー付き</small></h1>
+    <nav role="tablist" aria-label="表示切替">
+      <button class="tab" id="tab-quiz" role="tab" aria-selected="true" aria-controls="panel-quiz">クイズ</button>
+      <button class="tab" id="tab-sheet" role="tab" aria-selected="false" aria-controls="panel-sheet">暗記シート</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ============ クイズパネル ============ -->
+<section id="panel-quiz" role="tabpanel" aria-labelledby="tab-quiz">
+
+  <!-- スタート画面 -->
+  <div id="screen-start" class="card">
+    <p class="start-lead">過去問頻出論点（★★★＝必ず出る）から出題します。1問ごとに解説つき。<b>合格ライン目安：正答率70%</b>。</p>
+    <fieldset>
+      <legend>出題カテゴリ</legend>
+      <div class="chip-row" id="cat-chips"></div>
+      <p class="count-note" id="cat-note"></p>
+    </fieldset>
+    <fieldset>
+      <legend>出題数</legend>
+      <div class="chip-row" id="num-chips">
+        <button class="chip" data-n="10" aria-pressed="true">10問（標準）</button>
+        <button class="chip" data-n="20" aria-pressed="false">20問（しっかり）</button>
+        <button class="chip" data-n="999" aria-pressed="false">全問チャレンジ</button>
+      </div>
+    </fieldset>
+    <button class="btn" id="btn-start">クイズを始める</button>
+  </div>
+
+  <!-- 出題画面 -->
+  <div id="screen-quiz" class="hidden">
+    <div class="quiz-top">
+      <span class="progress-label" id="progress-label"></span>
+      <span class="timer" id="timer" aria-label="経過時間">00:00</span>
+    </div>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <div class="card">
+      <div class="q-meta">
+        <span class="q-cat" id="q-cat"></span>
+        <span class="stars" id="q-stars" aria-label="頻出度"></span>
+      </div>
+      <p class="q-text" id="q-text"></p>
+      <div class="choices" id="choices"></div>
+      <div class="feedback hidden" id="feedback" role="status">
+        <p class="verdict" id="fb-verdict"></p>
+        <p id="fb-text"></p>
+      </div>
+      <div class="next-row">
+        <button class="btn hidden" id="btn-next">次の問題へ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 結果画面 -->
+  <div id="screen-result" class="hidden">
+    <div class="card">
+      <div class="result-hero">
+        <p class="result-grade" id="result-grade"></p>
+        <p class="result-score"><span id="result-score">0</span><small> 点 / 100点</small></p>
+        <p class="result-sub" id="result-sub"></p>
+        <span class="pass-line" id="pass-line"></span>
+      </div>
+      <h2 class="review-h" id="review-h">復習リスト（間違えた問題）</h2>
+      <div id="review-list"></div>
+      <div class="result-actions">
+        <button class="btn" id="btn-retry">もう一度（同じ条件）</button>
+        <button class="btn ghost" id="btn-back">条件を変える</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 暗記シートパネル ============ -->
+<section id="panel-sheet" role="tabpanel" aria-labelledby="tab-sheet" class="hidden">
+
+  <details class="sheet" open>
+    <summary>① 超頻出ミニメモ（絶対に覚える！）<span class="stars">★★★</span></summary>
+    <div class="sheet-body">
+      <table>
+        <tr><th>キーワード</th><th>答え</th></tr>
+        <tr><td>ボルドー左岸</td><td>カベルネ・ソーヴィニヨン主体（メドック地区）</td></tr>
+        <tr><td>ボルドー右岸</td><td>メルロ / カベルネ・フラン（サンテミリオン・ポムロール）</td></tr>
+        <tr><td>ブルゴーニュ赤</td><td>ピノ・ノワール</td></tr>
+        <tr><td>ブルゴーニュ白</td><td>シャルドネ</td></tr>
+        <tr><td>ボジョレー</td><td>ガメイ（マセラシオン・カルボニック）</td></tr>
+        <tr><td>シャンパーニュ</td><td>ピノ・ノワール＋ピノ・ムニエ＋シャルドネ</td></tr>
+        <tr><td>Sauvignon Blanc</td><td>サンセール / プイィ・フュメ / マールボロ（NZ）</td></tr>
+        <tr><td>Nebbiolo</td><td>バローロ / バルバレスコ（ピエモンテ）</td></tr>
+        <tr><td>Riesling</td><td>モーゼル / アルザス / ヴァッハウ（墺）</td></tr>
+      </table>
+      <p class="kpoint"><b>略号：</b>PN＝Pinot Noir｜PM＝Pinot Meunier｜CH＝Chardonnay｜RM＝Récoltant-Manipulant｜NM＝Négociant-Manipulant｜CM＝Coopérative de Manipulation</p>
+    </div>
+  </details>
+
+  <details class="sheet">
+    <summary>② 世界の主要産地と代表品種 <span class="stars">★★★</span></summary>
+    <div class="sheet-body">
+      <table>
+        <tr><th>産地</th><th>品種・ポイント</th></tr>
+        <tr><td>ローヌ南部</td><td>GSM（グルナッシュ・シラー・ムールヴェードル）／シャトーヌフ・デュ・パプ</td></tr>
+        <tr><td>ロワール</td><td>サンセール＝SB／ミュスカデ＝ムロン・ド・ブルゴーニュ／ヴーヴレ＝シュナン・ブラン</td></tr>
+        <tr><td>アルザス</td><td>リースリング／ゲヴュルツトラミネール／ピノ・グリ</td></tr>
+        <tr><td>キャンティ・クラシコ</td><td>サンジョヴェーゼ（ブルネッロ・ディ・モンタルチーノも同系）</td></tr>
+        <tr><td>ヴェネト</td><td>アマローネ（ヴァルポリチェッラ）＝コルヴィーナ／ソアーヴェ＝ガルガーネガ</td></tr>
+        <tr><td>リオハ</td><td>テンプラニーリョ（リベラ・デル・ドゥエロも）</td></tr>
+        <tr><td>プリオラート</td><td>ガルナッチャ、カリニェナ等（DOCa）</td></tr>
+        <tr><td>シェリー（ヘレス）</td><td>パロミノ</td></tr>
+        <tr><td>ドイツ</td><td>モーゼル／ラインガウ／ラインヘッセン＝リースリング</td></tr>
+        <tr><td>ポルトガル</td><td>ドウロ＝ポートワイン産地（トウリガ・ナシオナル等）／ヴィーニョ・ヴェルデ</td></tr>
+        <tr><td>ギリシャ</td><td>サントリーニ島＝アシルティコ／ネメア＝アギオルギティコ</td></tr>
+        <tr><td>ジョージア</td><td>クヴェヴリ（素焼きの甕で醸造・熟成）</td></tr>
+        <tr><td>アメリカ</td><td>ナパ＝CS／ソノマ／セントラル・コースト／オレゴン（ウィラメット・ヴァレー）＝PN</td></tr>
+        <tr><td>オーストラリア</td><td>バロッサ・ヴァレー＝シラーズ／マーガレット・リヴァー＝CS, CH／クレア・ヴァレー＝リースリング</td></tr>
+        <tr><td>ニュージーランド</td><td>マールボロ＝SB／セントラル・オタゴ＝PN</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details class="sheet">
+    <summary>③ ワインの格付け制度まとめ <span class="stars">★★★</span></summary>
+    <div class="sheet-body">
+      <table>
+        <tr><th>国</th><th>制度</th></tr>
+        <tr><td>フランス</td><td>AOP（旧AOC：Appellation d'Origine Protégée）。地域名→地区名→村名→一級格の順に範囲が狭いほど上位イメージ</td></tr>
+        <tr><td>イタリア</td><td>DOCG ＞ DOC ＞ IGT ＞ Vino（DOCG＝保証付原産地統制呼称）</td></tr>
+        <tr><td>スペイン</td><td>DOCa（リオハ、プリオラート）＞ DO ＞ VdT。単一畑＝Vino de Pago</td></tr>
+        <tr><td>ドイツ</td><td>QbA＋Prädikatswein：Kabinett→Spätlese→Auslese→Beerenauslese→Eiswein／Trockenbeerenauslese（果汁糖度の低→高）</td></tr>
+        <tr><td>ポルトガル</td><td>DO（Denominação de Origem）／IG</td></tr>
+        <tr><td>アメリカ</td><td>AVA（American Viticultural Area）</td></tr>
+      </table>
+      <p class="kpoint"><b>ポイント：</b>格付けは「上位から下位へ」厳格なルールがある国ほど品質の信頼性が高い。Eiswein＝健全な凍結ブドウ、Trockenbeerenauslese＝貴腐の干しブドウ状。</p>
+    </div>
+  </details>
+
+  <details class="sheet">
+    <summary>④ 醸造・造りの用語 <span class="stars">★★★</span></summary>
+    <div class="sheet-body">
+      <table>
+        <tr><th>用語</th><th>意味</th></tr>
+        <tr><td>マセラシオン</td><td>果皮や種子を果汁に浸し、色・タンニン・香りを抽出する工程</td></tr>
+        <tr><td>マロラクティック発酵（MLF）</td><td>リンゴ酸を乳酸に変える発酵。酸味をやわらげ、安定性を高める</td></tr>
+        <tr><td>シュール・リー</td><td>澱（おり）とともに熟成させること（ミュスカデで有名）</td></tr>
+        <tr><td>バトナージュ</td><td>澱を撹拌して旨味・コクを与える（主に白ワイン）</td></tr>
+        <tr><td>アッサンブラージュ</td><td>複数の品種や区画のワインをブレンドすること</td></tr>
+        <tr><td>ドサージュ</td><td>シャンパーニュ製造時、澱抜き後にリキュールを加える工程</td></tr>
+        <tr><td>マセラシオン・カルボニック</td><td>ボジョレー・ヌーヴォーの製法（炭酸ガス浸漬）</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details class="sheet">
+    <summary>⑤ 酒精強化ワイン <span class="stars">★★★</span></summary>
+    <div class="sheet-body">
+      <table>
+        <tr><th>名称</th><th>ポイント</th></tr>
+        <tr><td>ポート（Port）</td><td>ポルトガル・ドウロ地方。発酵途中でブランデー添加→甘口。タイプ：LBV、トゥニー、ヴィンテージ等</td></tr>
+        <tr><td>マデイラ（Madeira）</td><td>ポルトガル・マデイラ島。加熱熟成（エストゥファ）。ドライ〜スイート</td></tr>
+        <tr><td>シェリー（Sherry）</td><td>スペイン・ヘレス地方。フロール酵母の下で熟成。フィノ、アモンティリャード、オロロソ等</td></tr>
+        <tr><td>マルサラ（Marsala）</td><td>イタリア・シチリア島。ブランデー添加。フィーネ、スペリオーレ等</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details class="sheet">
+    <summary>⑥ スパークリングワイン <span class="stars">★★★</span></summary>
+    <div class="sheet-body">
+      <table>
+        <tr><th>名称</th><th>ポイント</th></tr>
+        <tr><td>シャンパーニュ</td><td>瓶内二次発酵。PN／PM／CH。スタイル：RM／NM／CM、Blanc de Blancs、Blanc de Noirs</td></tr>
+        <tr><td>カバ（Cava）</td><td>スペイン・カタルーニャ地方中心。瓶内二次発酵。マカベオ、チャレッロ、パレリャーダ</td></tr>
+        <tr><td>フランチャコルタ</td><td>イタリア・ロンバルディア州。瓶内二次発酵。シャルドネ、ピノ・ネロ等</td></tr>
+        <tr><td>プロセッコ</td><td>イタリア・ヴェネト州。シャルマ方式（タンク内二次発酵）。品種＝グレーラ</td></tr>
+        <tr><td>クレマン（Crémant）</td><td>フランス各地（アルザス、ブルゴーニュ等）。瓶内二次発酵</td></tr>
+      </table>
+      <p class="kpoint"><b>品種逆引きは必ずマスター：</b>カバ＝マカベオ系3品種／プロセッコ＝グレーラ／シャンパーニュ・フランチャコルタ＝瓶内二次発酵</p>
+    </div>
+  </details>
+
+  <details class="sheet">
+    <summary>⑦ サービス・テイスティング用語 <span class="stars">★★</span></summary>
+    <div class="sheet-body">
+      <table>
+        <tr><th>用語</th><th>意味</th></tr>
+        <tr><td>デキャンタージュ</td><td>澱の分離＋若いワインの開香（味・香りを引き出す）を目的とする</td></tr>
+        <tr><td>キャラフ（Carafe）</td><td>主に開香目的でワインを移し替える容器</td></tr>
+        <tr><td>澱（Lees / Dépôt）</td><td>熟成により生じる沈殿物</td></tr>
+        <tr><td>RM／NM／CM</td><td>RM＝自家栽培・醸造（レコルタン・マニピュラン）／NM＝ネゴシアン／CM＝協同組合</td></tr>
+      </table>
+    </div>
+  </details>
+
+</section>
+</main>
+
+<footer>直前チェックは「超頻出ミニメモ」と間違えた問題の復習だけでOK。落ち着いて解ける人が、合格する人。</footer>
+
+<script>
+"use strict";
+/* ================= 問題バンク =================
+   stars: 3=最頻出(必ず出る) 2=頻出 1=出る・差がつく */
+const CATS = ["産地・品種","格付け制度","醸造用語","酒精強化","スパークリング","サービス"];
+const BANK = [
+/* ---- 産地・品種 ---- */
+{c:0,s:3,q:"イタリア・ピエモンテ州「バローロ」「バルバレスコ」の主要品種は？",a:"ネッビオーロ",x:["サンジョヴェーゼ","コルヴィーナ","バルベーラ"],e:"バローロ／バルバレスコ＝ネッビオーロは超頻出。ピエモンテ（北西部）とセットで覚える。"},
+{c:0,s:3,q:"「キャンティ・クラシコ」の主要品種は？",a:"サンジョヴェーゼ",x:["ネッビオーロ","モンテプルチアーノ","プリミティーヴォ"],e:"トスカーナ＝サンジョヴェーゼ。ブルネッロ・ディ・モンタルチーノも同系品種。"},
+{c:0,s:2,q:"ヴェネト州「ソアーヴェ」の主要品種は？",a:"ガルガーネガ",x:["コルテーゼ","トレッビアーノ","ヴェルメンティーノ"],e:"ソアーヴェ＝ガルガーネガ。同じヴェネトのアマローネ＝コルヴィーナとセットで。"},
+{c:0,s:2,q:"アマローネ・デッラ・ヴァルポリチェッラの主要品種は？",a:"コルヴィーナ",x:["ガルガーネガ","ネッビオーロ","アリアニコ"],e:"陰干しブドウから造る力強い赤。ヴェネト州＝コルヴィーナ。"},
+{c:0,s:3,q:"スペイン「リオハ」の主要黒ブドウ品種は？",a:"テンプラニーリョ",x:["ガルナッチャ","モナストレル","アルバリーニョ"],e:"リオハ＝テンプラニーリョ。リベラ・デル・ドゥエロも同品種（呼び名違いあり）。"},
+{c:0,s:2,q:"シェリーの主要品種は？",a:"パロミノ",x:["アイレン","ベルデホ","マカベオ"],e:"ヘレス（スペイン南部）＝パロミノ。甘口用にはペドロ・ヒメネスも。"},
+{c:0,s:3,q:"ロワール地方「サンセール」「プイィ・フュメ」の品種は？",a:"ソーヴィニヨン・ブラン",x:["シュナン・ブラン","ミュスカデ","シャルドネ"],e:"ロワール上流＝SB。NZマールボロのSBと並べて頻出。"},
+{c:0,s:3,q:"ロワール地方「ミュスカデ」の品種は？",a:"ムロン・ド・ブルゴーニュ",x:["ミュスカ","シュナン・ブラン","フォル・ブランシュ"],e:"ひっかけ注意：ミュスカデ＝ムロン・ド・ブルゴーニュ（ミュスカではない）。シュール・リー製法も頻出。"},
+{c:0,s:2,q:"ロワール地方「ヴーヴレ」の品種は？",a:"シュナン・ブラン",x:["ソーヴィニヨン・ブラン","シャルドネ","ピノ・グリ"],e:"ヴーヴレ＝シュナン・ブラン。辛口〜甘口、泡まで造られる。"},
+{c:0,s:3,q:"ボルドー左岸（メドック地区）の主体品種は？",a:"カベルネ・ソーヴィニヨン",x:["メルロ","カベルネ・フラン","プティ・ヴェルド"],e:"左岸＝CS主体、右岸（サンテミリオン／ポムロール）＝メルロ・CF主体。左右の対比は超頻出。"},
+{c:0,s:3,q:"ボルドー右岸（サンテミリオン／ポムロール）の主体品種は？",a:"メルロ",x:["カベルネ・ソーヴィニヨン","マルベック","シラー"],e:"右岸＝メルロ（＋カベルネ・フラン）。"},
+{c:0,s:2,q:"ボジョレーの品種は？",a:"ガメイ",x:["ピノ・ノワール","シラー","サンソー"],e:"ボジョレー＝ガメイ。ヌーヴォー＝マセラシオン・カルボニックとセットで。"},
+{c:0,s:2,q:"シャトーヌフ・デュ・パプがある地方は？",a:"南ローヌ",x:["北ローヌ","ラングドック","プロヴァンス"],e:"南ローヌ＝GSM（グルナッシュ・シラー・ムールヴェードル）。"},
+{c:0,s:3,q:"ドイツ・モーゼルの代表品種は？",a:"リースリング",x:["ミュラー・トゥルガウ","シルヴァーナー","ゲヴュルツトラミネール"],e:"モーゼル／ラインガウ／ラインヘッセン＝リースリング。"},
+{c:0,s:2,q:"オーストラリア「バロッサ・ヴァレー」の代表品種は？",a:"シラーズ",x:["カベルネ・ソーヴィニヨン","ピノ・ノワール","グルナッシュ"],e:"バロッサ＝シラーズ。クレア・ヴァレー＝リースリング、マーガレット・リヴァー＝CS/CHも。"},
+{c:0,s:3,q:"ニュージーランド「マールボロ」の代表品種は？",a:"ソーヴィニヨン・ブラン",x:["シャルドネ","ピノ・グリ","リースリング"],e:"マールボロ＝SB、セントラル・オタゴ＝ピノ・ノワール。"},
+{c:0,s:2,q:"アメリカ・オレゴン州「ウィラメット・ヴァレー」の代表品種は？",a:"ピノ・ノワール",x:["ジンファンデル","カベルネ・ソーヴィニヨン","メルロ"],e:"冷涼なオレゴン＝PN。ナパ＝CSとの対比で覚える。"},
+{c:0,s:2,q:"ギリシャ・サントリーニ島の代表品種は？",a:"アシルティコ",x:["アギオルギティコ","クシノマヴロ","モスコフィレロ"],e:"サントリーニ＝アシルティコ（白）。ネメア＝アギオルギティコ（赤）。"},
+{c:0,s:2,q:"ジョージアの伝統的な醸造容器「クヴェヴリ」とは？",a:"素焼きの甕で醸造・熟成する容器",x:["オーク製の大樽","ステンレスタンク","アンフォラ型のガラス容器"],e:"クヴェヴリ（Qvevri）＝地中に埋めた素焼きの甕。世界無形文化遺産。"},
+{c:0,s:2,q:"ポートワインの主要品種は？",a:"トウリガ・ナシオナル",x:["アルバリーニョ","テンプラニーリョ","バガ"],e:"ドウロ地方＝ポートワイン産地。主要品種はトウリガ・ナシオナル等。"},
+{c:0,s:3,q:"シャンパーニュ地方の主要3品種の組み合わせは？",a:"ピノ・ノワール／ピノ・ムニエ／シャルドネ",x:["ピノ・ノワール／ガメイ／シャルドネ","ピノ・グリ／ピノ・ブラン／シャルドネ","メルロ／ピノ・ノワール／シャルドネ"],e:"PN＋PM＋CH。略号（PN/PM/CH）でも問われる。"},
+{c:0,s:3,q:"カリフォルニア「ナパ・ヴァレー」を代表する黒ブドウ品種は？",a:"カベルネ・ソーヴィニヨン",x:["ピノ・ノワール","ジンファンデル","シラー"],e:"ナパ＝CS。ソノマ、セントラル・コーストと併せて頻出。"},
+/* ---- 格付け制度 ---- */
+{c:1,s:3,q:"フランスのAOPの旧呼称は？",a:"AOC",x:["VDQS","IGP","Vin de Pays"],e:"AOP＝旧AOC（Appellation d'Origine Contrôlée→Protégée）。"},
+{c:1,s:3,q:"イタリアワインの格付けで最上位は？",a:"DOCG",x:["DOC","IGT","Vino"],e:"DOCG＞DOC＞IGT＞Vinoの順。DOCG＝保証付原産地統制呼称。"},
+{c:1,s:3,q:"スペインでDOCa（特選原産地呼称）に認定されている産地は？",a:"リオハ",x:["ヘレス","ルエダ","リアス・バイシャス"],e:"DOCa＝リオハとプリオラートの2つ。超頻出。"},
+{c:1,s:2,q:"スペインの「単一ブドウ畑限定」の格付けは？",a:"Vino de Pago",x:["DOCa","VdT","Vino de la Tierra"],e:"Vino de Pago＝単一畑の特別格付け。VdT＝地ワイン。"},
+{c:1,s:3,q:"ドイツ・プレディカーツヴァインで最も果汁糖度が高い（最上位）クラスは？",a:"トロッケンベーレンアウスレーゼ",x:["アウスレーゼ","シュペートレーゼ","カビネット"],e:"Kabinett→Spätlese→Auslese→Beerenauslese→Eiswein／Trockenbeerenauslese の順で糖度が上がる。"},
+{c:1,s:3,q:"ドイツ・プレディカーツヴァインで最も下位（果汁糖度が最も低い）のクラスは？",a:"カビネット",x:["シュペートレーゼ","アイスヴァイン","ベーレンアウスレーゼ"],e:"Kabinett（カビネット）が入口。順序を必ず暗記。"},
+{c:1,s:2,q:"アイスヴァイン（Eiswein）の原料は？",a:"樹上で凍結した健全なブドウ",x:["貴腐ブドウ","陰干しブドウ","早摘みの未熟ブドウ"],e:"Eiswein＝凍ったブドウを凍結状態のまま圧搾。BA/TBA＝貴腐との違いに注意。"},
+{c:1,s:3,q:"アメリカのブドウ栽培地域を示す呼称制度は？",a:"AVA",x:["AOP","GI","DO"],e:"AVA＝American Viticultural Area。ナパ・ヴァレー等が該当。"},
+{c:1,s:2,q:"ポルトガルの原産地呼称「DO」の正式名称は？",a:"Denominação de Origem",x:["Denominación de Origen","Denominazione di Origine","Domaine d'Origine"],e:"ポルトガル語＝Denominação。スペイン語のDenominaciónと混同しやすいので注意。"},
+{c:1,s:2,q:"イタリアの「IGT」が示すものは？",a:"地理的表示（Indicazione Geografica Tipica）",x:["最上位の保証付呼称","テーブルワイン","単一畑の格付け"],e:"IGT＝地理的表示。スーパートスカーナ等で使用されることも。"},
+{c:1,s:2,q:"ドイツの「QbA」が示すものは？",a:"指定栽培地域の上質ワイン",x:["最上位の貴腐ワイン","テーブルワイン","スパークリングワイン"],e:"QbA＝クヴァリテーツヴァイン・ベシュティムター・アンバウゲビーテ（指定13地域の上質ワイン）。"},
+/* ---- 醸造用語 ---- */
+{c:2,s:3,q:"果皮や種子を果汁に浸し、色・タンニン・香りを抽出する工程は？",a:"マセラシオン",x:["バトナージュ","スーティラージュ","デブルバージュ"],e:"マセラシオン（Maceration）＝醸し。赤ワイン醸造の基本工程。"},
+{c:2,s:3,q:"マロラクティック発酵（MLF）で変換されるのは？",a:"リンゴ酸 → 乳酸",x:["乳酸 → リンゴ酸","酒石酸 → 乳酸","クエン酸 → 酢酸"],e:"MLF＝リンゴ酸を乳酸に変え、酸味をやわらげて安定性を高める。"},
+{c:2,s:2,q:"「シュール・リー」とは？",a:"澱とともに熟成させること",x:["澱を撹拌すること","複数のワインをブレンドすること","リキュールを添加すること"],e:"Sur Lie＝澱の上。ミュスカデで有名。バトナージュ（撹拌）との区別が頻出。"},
+{c:2,s:2,q:"澱を撹拌して旨味・コクを与える作業は？",a:"バトナージュ",x:["シュール・リー","ドサージュ","コラージュ"],e:"Bâtonnage＝澱の撹拌（主に白ワイン）。シュール・リー＝澱と共に熟成、と対で覚える。"},
+{c:2,s:3,q:"複数の品種や区画のワインをブレンドすることを何という？",a:"アッサンブラージュ",x:["マセラシオン","エルヴァージュ","ヴィニフィカシオン"],e:"Assemblage＝調合・ブレンド。ボルドーやシャンパーニュで重要。"},
+{c:2,s:2,q:"シャンパーニュ製造で、澱抜き後にリキュールを加える工程は？",a:"ドサージュ",x:["ルミュアージュ","デゴルジュマン","ティラージュ"],e:"Dosage＝門出のリキュール添加。甘辛度（Brut等）を決める。"},
+{c:2,s:2,q:"ボジョレー・ヌーヴォーで用いられる醸造法は？",a:"マセラシオン・カルボニック",x:["シュール・リー","スキンコンタクト","ソレラシステム"],e:"炭酸ガス浸漬法。フレッシュでフルーティな味わいに。"},
+/* ---- 酒精強化 ---- */
+{c:3,s:3,q:"ポートワインの製法の特徴は？",a:"発酵途中でブランデーを添加し甘口に仕上げる",x:["発酵後にブランデーを添加する","加熱熟成させる","フロール酵母の下で熟成させる"],e:"発酵「途中」での酒精強化により糖分が残る＝甘口。ドウロ地方。"},
+{c:3,s:2,q:"マデイラの製法の特徴は？",a:"加熱熟成（エストゥファ等）",x:["瓶内二次発酵","フロール酵母による熟成","炭酸ガス浸漬"],e:"マデイラ＝加熱熟成が最大の特徴。ドライ〜スイートまで多様。"},
+{c:3,s:3,q:"シェリー（フィノ等）の熟成の特徴は？",a:"フロール（産膜酵母）の下で熟成",x:["加熱熟成","陰干しブドウを使用","発酵途中で酒精強化し甘口に"],e:"ヘレス地方。フィノ＝フロール熟成、オロロソ＝酸化熟成。"},
+{c:3,s:2,q:"マルサラの産地は？",a:"イタリア・シチリア島",x:["スペイン・ヘレス","ポルトガル・マデイラ島","ギリシャ・サントリーニ島"],e:"マルサラ＝シチリア島の酒精強化ワイン。フィーネ、スペリオーレ等。"},
+{c:3,s:2,q:"ポートワインの産地は？",a:"ポルトガル・ドウロ地方",x:["スペイン・リオハ","ポルトガル・ヴィーニョ・ヴェルデ","イタリア・ヴェネト州"],e:"ドウロ＝ポート。品種はトウリガ・ナシオナル等。"},
+{c:3,s:1,q:"シェリーの産地ヘレスがある国は？",a:"スペイン",x:["ポルトガル","イタリア","フランス"],e:"ヘレス（Jerez）＝スペイン・アンダルシア地方。"},
+/* ---- スパークリング ---- */
+{c:4,s:3,q:"シャンパーニュの製法は？",a:"瓶内二次発酵",x:["シャルマ方式","炭酸ガス注入","単式発酵"],e:"瓶内二次発酵＝伝統的製法。カバ、フランチャコルタ、クレマンも同方式。"},
+{c:4,s:3,q:"カバ（Cava）の主要品種の組み合わせは？",a:"マカベオ／チャレッロ／パレリャーダ",x:["グレーラ／マカベオ／チャレッロ","パロミノ／アイレン／ベルデホ","シャルドネ／ピノ・ノワール／ピノ・ムニエ"],e:"スペイン・カタルーニャ中心。瓶内二次発酵＋土着3品種。"},
+{c:4,s:2,q:"プロセッコの製法は？",a:"シャルマ方式（タンク内二次発酵）",x:["瓶内二次発酵","炭酸ガス注入","ソレラシステム"],e:"プロセッコ＝ヴェネト州、シャルマ方式、品種グレーラ。瓶内二次発酵組との違いが頻出。"},
+{c:4,s:2,q:"プロセッコの主要品種は？",a:"グレーラ",x:["ガルガーネガ","トレッビアーノ","コルテーゼ"],e:"Glera（グレーラ）。旧称プロセッコから改名された品種。"},
+{c:4,s:3,q:"フランチャコルタが造られるイタリアの州は？",a:"ロンバルディア州",x:["ヴェネト州","ピエモンテ州","トスカーナ州"],e:"フランチャコルタ＝ロンバルディア州、瓶内二次発酵、CH／ピノ・ネロ等。"},
+{c:4,s:2,q:"「クレマン」とは何を指す？",a:"シャンパーニュ以外のフランス各地で造る瓶内二次発酵スパークリング",x:["イタリアのタンク内二次発酵スパークリング","スペインの瓶内二次発酵スパークリング","炭酸ガス注入方式の総称"],e:"Crémant d'Alsace、Crémant de Bourgogne等。製法はシャンパーニュと同じ瓶内二次発酵。"},
+{c:4,s:2,q:"シャンパーニュの「ブラン・ド・ノワール」とは？",a:"黒ブドウのみから造る白スパークリング",x:["白ブドウのみから造る","黒ブドウと白ブドウをブレンドする","ロゼのシャンパーニュ"],e:"Blanc de Noirs＝PN/PMのみ。Blanc de Blancs＝CHのみ。"},
+/* ---- サービス ---- */
+{c:5,s:3,q:"デキャンタージュの主な目的は？",a:"澱の分離と、若いワインの香りを開かせること",x:["温度を上げること","炭酸ガスを加えること","アルコール度数を下げること"],e:"①澱の分離（熟成した赤）②開香（若い赤）の2つの目的を押さえる。"},
+{c:5,s:2,q:"主に開香目的でワインを移し替える容器は？",a:"キャラフ",x:["パニエ","ソムリエナイフ","ヴィノテーク"],e:"Carafe＝キャラフ。デキャンタとの使い分けで問われる。"},
+{c:5,s:2,q:"ワインの「澱（Lees／Dépôt）」とは？",a:"熟成により生じる沈殿物",x:["発酵前の果汁の濁り","コルクの破片","酒石酸の結晶のみを指す"],e:"熟成中に発生する沈殿物。デキャンタージュで分離する。"},
+{c:5,s:3,q:"シャンパーニュの「RM」が示す生産者形態は？",a:"自家栽培ブドウで醸造する生産者（レコルタン・マニピュラン）",x:["ブドウを買い付けて醸造する生産者","協同組合","熟成のみ行う業者"],e:"RM＝Récoltant-Manipulant。NM＝ネゴシアン（買いブドウ可）、CM＝協同組合。"},
+{c:5,s:2,q:"シャンパーニュの「NM」が示す生産者形態は？",a:"ブドウを購入して醸造できる生産者（ネゴシアン・マニピュラン）",x:["自家栽培のみの生産者","協同組合","栽培農家"],e:"NM＝Négociant-Manipulant。大手メゾンの多くがNM。"},
+{c:5,s:1,q:"シャンパーニュの「CM」が示す生産者形態は？",a:"協同組合（コーペラティヴ・ド・マニピュラシオン）",x:["自家栽培の生産者","ネゴシアン","王室御用達の生産者"],e:"CM＝Coopérative de Manipulation＝協同組合。"},
+];
+
+/* ================= 状態 ================= */
+const $=id=>document.getElementById(id);
+let selectedCats=new Set(CATS.map((_,i)=>i));
+let numQ=10;
+let quiz=[], idx=0, correct=0, results=[], answered=false;
+let timerId=null, startTime=0, elapsed=0;
+
+/* ================= タブ ================= */
+function switchTab(which){
+  const quizSel = which==="quiz";
+  $("tab-quiz").setAttribute("aria-selected",quizSel);
+  $("tab-sheet").setAttribute("aria-selected",!quizSel);
+  $("panel-quiz").classList.toggle("hidden",!quizSel);
+  $("panel-sheet").classList.toggle("hidden",quizSel);
+}
+$("tab-quiz").addEventListener("click",()=>switchTab("quiz"));
+$("tab-sheet").addEventListener("click",()=>switchTab("sheet"));
+
+/* ================= スタート画面 ================= */
+function renderCatChips(){
+  const wrap=$("cat-chips");
+  wrap.innerHTML="";
+  const all=document.createElement("button");
+  all.className="chip";
+  all.textContent="すべて";
+  all.setAttribute("aria-pressed", selectedCats.size===CATS.length);
+  all.addEventListener("click",()=>{
+    selectedCats=new Set(CATS.map((_,i)=>i));
+    renderCatChips();
+  });
+  wrap.appendChild(all);
+  CATS.forEach((name,i)=>{
+    const b=document.createElement("button");
+    b.className="chip";
+    b.textContent=name;
+    b.setAttribute("aria-pressed", selectedCats.has(i) && selectedCats.size!==CATS.length);
+    b.addEventListener("click",()=>{
+      if(selectedCats.size===CATS.length){ selectedCats=new Set([i]); }
+      else if(selectedCats.has(i)){
+        if(selectedCats.size>1) selectedCats.delete(i);
+      } else { selectedCats.add(i); }
+      renderCatChips();
+    });
+    wrap.appendChild(b);
+  });
+  const pool=BANK.filter(q=>selectedCats.has(q.c)).length;
+  $("cat-note").textContent=`対象 ${pool} 問（複数カテゴリの組み合わせ可）`;
+}
+renderCatChips();
+
+document.querySelectorAll("#num-chips .chip").forEach(b=>{
+  b.addEventListener("click",()=>{
+    document.querySelectorAll("#num-chips .chip").forEach(x=>x.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");
+    numQ=parseInt(b.dataset.n,10);
+  });
+});
+
+/* ================= ユーティリティ ================= */
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function fmt(sec){
+  const m=String(Math.floor(sec/60)).padStart(2,"0");
+  const s=String(sec%60).padStart(2,"0");
+  return `${m}:${s}`;
+}
+
+/* ================= タイマー ================= */
+function startTimer(){
+  stopTimer();
+  startTime=Date.now();
+  timerId=setInterval(()=>{
+    elapsed=Math.floor((Date.now()-startTime)/1000);
+    $("timer").textContent=fmt(elapsed);
+  },250);
+}
+function stopTimer(){
+  if(timerId){ clearInterval(timerId); timerId=null; }
+}
+
+/* ================= クイズ進行 ================= */
+function startQuiz(){
+  const pool=shuffle(BANK.filter(q=>selectedCats.has(q.c)));
+  quiz=pool.slice(0,Math.min(numQ,pool.length));
+  idx=0; correct=0; results=[]; elapsed=0;
+  $("timer").textContent="00:00";
+  $("screen-start").classList.add("hidden");
+  $("screen-result").classList.add("hidden");
+  $("screen-quiz").classList.remove("hidden");
+  renderDots();
+  startTimer();
+  renderQuestion();
+}
+
+function renderDots(){
+  const wrap=$("dots");
+  wrap.innerHTML="";
+  quiz.forEach((_,i)=>{
+    const d=document.createElement("span");
+    d.className="dot";
+    if(i<results.length) d.classList.add(results[i].ok?"ok":"ng");
+    else if(i===idx) d.classList.add("now");
+    wrap.appendChild(d);
+  });
+}
+
+function renderQuestion(){
+  answered=false;
+  const q=quiz[idx];
+  $("progress-label").textContent=`第 ${idx+1} 問 / 全 ${quiz.length} 問`;
+  $("q-cat").textContent=CATS[q.c];
+  $("q-stars").textContent="★".repeat(q.s);
+  $("q-text").textContent=q.q;
+  $("feedback").classList.add("hidden");
+  $("btn-next").classList.add("hidden");
+
+  const choices=shuffle([q.a, ...q.x]);
+  const wrap=$("choices");
+  wrap.innerHTML="";
+  const keys=["ア","イ","ウ","エ"];
+  choices.forEach((text,i)=>{
+    const b=document.createElement("button");
+    b.className="choice";
+    b.innerHTML=`<span class="key">${keys[i]}</span><span>${text}</span>`;
+    b.addEventListener("click",()=>answer(b,text));
+    wrap.appendChild(b);
+  });
+  renderDots();
+}
+
+function answer(btn,text){
+  if(answered) return;
+  answered=true;
+  const q=quiz[idx];
+  const ok=(text===q.a);
+  if(ok) correct++;
+  results.push({ok, q});
+
+  document.querySelectorAll("#choices .choice").forEach(b=>{
+    b.disabled=true;
+    const t=b.querySelector("span:last-child").textContent;
+    if(t===q.a) b.classList.add("correct");
+  });
+  if(!ok) btn.classList.add("wrong");
+
+  const fb=$("feedback");
+  fb.classList.remove("hidden","good","bad");
+  fb.classList.add(ok?"good":"bad");
+  $("fb-verdict").textContent= ok ? "正解！" : `不正解…　正解：${q.a}`;
+  $("fb-text").textContent=q.e;
+
+  $("btn-next").textContent = (idx===quiz.length-1) ? "結果を見る" : "次の問題へ";
+  $("btn-next").classList.remove("hidden");
+  $("btn-next").focus();
+  renderDots();
+}
+
+$("btn-next").addEventListener("click",()=>{
+  if(idx===quiz.length-1){ showResult(); }
+  else { idx++; renderQuestion(); }
+});
+
+/* ================= 結果 ================= */
+function showResult(){
+  stopTimer();
+  $("screen-quiz").classList.add("hidden");
+  $("screen-result").classList.remove("hidden");
+
+  const pct=Math.round(correct/quiz.length*100);
+  $("result-score").textContent=pct;
+  $("result-sub").textContent=`正解 ${correct} / ${quiz.length} 問　・　所要時間 ${fmt(elapsed)}`;
+
+  let grade;
+  if(pct===100) grade="グラン・クリュ級！完璧です";
+  else if(pct>=80) grade="プルミエ・クリュ級！合格圏";
+  else if(pct>=70) grade="合格ライン到達。あと一押し";
+  else if(pct>=50) grade="ヴィラージュ級。復習で伸びる";
+  else grade="まずは超頻出ミニメモから！";
+  $("result-grade").textContent=grade;
+
+  const pl=$("pass-line");
+  pl.className="pass-line "+(pct>=70?"pass":"fail");
+  pl.textContent= pct>=70 ? "✔ 合格ライン（70%）クリア" : "✘ 合格ライン（70%）まであと"+(70-pct)+"%";
+
+  const wrong=results.filter(r=>!r.ok);
+  const list=$("review-list");
+  list.innerHTML="";
+  if(wrong.length===0){
+    $("review-h").textContent="全問正解！復習リストはありません 🍷";
+  }else{
+    $("review-h").textContent=`復習リスト（間違えた ${wrong.length} 問）`;
+    wrong.forEach(r=>{
+      const d=document.createElement("div");
+      d.className="review-item";
+      d.innerHTML=`<p class="rq">Q. ${r.q.q}</p><p class="ra">A. ${r.q.a}</p><p class="rx">${r.q.e}</p>`;
+      list.appendChild(d);
+    });
+  }
+}
+
+$("btn-start").addEventListener("click",startQuiz);
+$("btn-retry").addEventListener("click",startQuiz);
+$("btn-back").addEventListener("click",()=>{
+  $("screen-result").classList.add("hidden");
+  $("screen-start").classList.remove("hidden");
+});
+</script>
+</body>
+</html>
