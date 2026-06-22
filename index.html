@@ -220,6 +220,51 @@ details.sheet summary:focus-visible{outline:2px solid var(--gold);outline-offset
 }
 .kpoint b{color:var(--bordeaux)}
 
+/* ===== 暗記ソング ===== */
+.song-intro{font-size:.9rem;color:#5d5350;margin-bottom:16px}
+.verse{
+  background:#fff;border:1px solid var(--line);border-radius:14px;
+  padding:18px 20px;margin-bottom:14px;
+}
+.verse-head{
+  display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;
+}
+.verse-title{
+  font-family:"Shippori Mincho",serif;font-weight:800;color:var(--wine);
+  font-size:1.05rem;letter-spacing:.06em;
+}
+.btn-play{
+  font-family:inherit;font-weight:700;font-size:.85rem;cursor:pointer;
+  border:1.5px solid var(--bordeaux);background:#fff;color:var(--bordeaux);
+  border-radius:999px;padding:6px 16px;display:inline-flex;align-items:center;gap:6px;
+  margin-left:auto;transition:all .12s ease;
+}
+.btn-play:hover{background:var(--bordeaux);color:#fff}
+.btn-play:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn-play[aria-pressed="true"]{background:var(--bordeaux);color:#fff}
+.lyrics{display:grid;gap:3px;margin-bottom:6px}
+.lyric{
+  font-family:"Shippori Mincho",serif;font-size:1.08rem;font-weight:600;
+  line-height:1.5;padding:6px 12px;border-radius:8px;letter-spacing:.04em;
+  transition:background .15s ease, color .15s ease;
+}
+.lyric.amelo{color:var(--ink)}
+.lyric.bmelo{color:#6b4a52}        /* Bメロは少し色変え */
+.lyric.singing{background:var(--gold);color:#3a2a08;font-weight:800}
+.lyric.refrain{color:#9a6a30;font-style:italic;background:#FBF6E8}
+.lyric .ly-text{display:block}
+.lyric .ly-orig{
+  display:block;font-family:"Zen Kaku Gothic New",sans-serif;
+  font-size:.7rem;font-weight:400;color:#a99e92;letter-spacing:.02em;margin-top:1px;
+}
+.lyric.singing .ly-orig{color:#7a6a3a}
+.verse-point{
+  background:#FBF6E8;border:1px dashed var(--gold);border-radius:8px;
+  padding:9px 13px;margin-top:10px;font-size:.82rem;color:#5d5350;
+}
+.verse-point b{color:var(--bordeaux)}
+.song-tip{font-size:.78rem;color:#9b9088;text-align:center;margin:4px 0 20px}
+
 footer{
   text-align:center;font-size:.75rem;color:#9b9088;padding:0 16px 36px;
 }
@@ -241,6 +286,7 @@ footer{
     <nav role="tablist" aria-label="表示切替">
       <button class="tab" id="tab-quiz" role="tab" aria-selected="true" aria-controls="panel-quiz">クイズ</button>
       <button class="tab" id="tab-sheet" role="tab" aria-selected="false" aria-controls="panel-sheet">暗記シート</button>
+      <button class="tab" id="tab-song" role="tab" aria-selected="false" aria-controls="panel-song">暗記ソング</button>
     </nav>
   </div>
 </header>
@@ -431,6 +477,16 @@ footer{
   </details>
 
 </section>
+
+<!-- ============ 暗記ソングパネル ============ -->
+<section id="panel-song" role="tabpanel" aria-labelledby="tab-song" class="hidden">
+  <div class="song-intro card">
+    <p>よく知られた童謡のメロディに乗せた替え歌で、頻出ポイントを丸ごと暗記。原曲はいずれも著作権切れの民謡、歌詞はこのアプリのオリジナルです。</p>
+    <div class="chip-row" id="song-switcher" style="margin-top:12px"></div>
+    <p class="song-tip" id="song-note" style="margin:10px 0 0"></p>
+  </div>
+  <div id="song-list"></div>
+</section>
 </main>
 
 <footer>直前チェックは「超頻出ミニメモ」と間違えた問題の復習だけでOK。落ち着いて解ける人が、合格する人。</footer>
@@ -601,14 +657,17 @@ let timerId=null, startTime=0, elapsed=0;
 
 /* ================= タブ ================= */
 function switchTab(which){
-  const quizSel = which==="quiz";
-  $("tab-quiz").setAttribute("aria-selected",quizSel);
-  $("tab-sheet").setAttribute("aria-selected",!quizSel);
-  $("panel-quiz").classList.toggle("hidden",!quizSel);
-  $("panel-sheet").classList.toggle("hidden",quizSel);
+  const tabs={quiz:"panel-quiz",sheet:"panel-sheet",song:"panel-song"};
+  for(const [name,panel] of Object.entries(tabs)){
+    const sel = (name===which);
+    $("tab-"+name).setAttribute("aria-selected",sel);
+    $(panel).classList.toggle("hidden",!sel);
+  }
+  if(which!=="song") stopSong();
 }
 $("tab-quiz").addEventListener("click",()=>switchTab("quiz"));
 $("tab-sheet").addEventListener("click",()=>switchTab("sheet"));
+$("tab-song").addEventListener("click",()=>switchTab("song"));
 
 /* ================= スタート画面 ================= */
 function renderCatChips(){
@@ -807,6 +866,320 @@ $("btn-back").addEventListener("click",()=>{
   $("screen-result").classList.add("hidden");
   $("screen-start").classList.remove("hidden");
 });
+
+/* ================= 暗記ソング =================
+   原曲はいずれも著作権切れの民謡。歌詞はこのアプリのオリジナル。
+   - twinkle: 「キラキラ星」のメロディ。単純音階のため音声再生あり。
+   - clarinet:「クラリネットをこわしちゃった」(仏民謡)。歌は誰もが知っているので
+     音程の断定再生は避け、歌詞が原曲のどこに乗るか(scaffold)を示し視覚ガイドで光らせる。 */
+
+const SONGS={
+  twinkle:{
+    label:"キラキラ星 版",
+    note:"♪きらきらひかる… 1行＝7音が目安。再生ボタンでメロディが鳴り歌詞が光ります。",
+    audio:true,
+    verses:[
+      {title:"① ボルドー 〜左岸と右岸〜",
+       lines:[
+         {t:"ボルドー さがん",b:0},{t:"カベルネ しゅたい",b:0},
+         {t:"うがんは メルロ",b:1},{t:"カベフランも ね",b:1},
+         {t:"ひだりと みぎを",b:0},{t:"まちがえ ないで",b:0},
+       ],
+       point:"左岸＝カベルネ・ソーヴィニヨン主体／右岸＝メルロ(＋カベルネ・フラン)。"},
+      {title:"② ブルゴーニュ と ボジョレー",
+       lines:[
+         {t:"あかは ピノ・ノワ",b:0},{t:"しろは シャルドネ",b:0},
+         {t:"ブルゴーニュ よ",b:1},{t:"ボジョレー ガメイ",b:1},
+         {t:"おなじ フランス",b:0},{t:"ひんしゅ ちがう",b:0},
+       ],
+       point:"ブルゴーニュ＝赤ピノ・ノワール／白シャルドネ。ボジョレーだけガメイ。"},
+      {title:"③ イタリア の 二大銘醸",
+       lines:[
+         {t:"バローロ はね",b:0},{t:"ネッビオーロ",b:0},
+         {t:"キャンティ ならば",b:1},{t:"サンジョヴェーゼ",b:1},
+         {t:"ピエモンテ と",b:0},{t:"トスカーナ だ",b:0},
+       ],
+       point:"バローロ/バルバレスコ(ピエモンテ)＝ネッビオーロ。キャンティ/ブルネッロ(トスカーナ)＝サンジョヴェーゼ。"},
+      {title:"④ スペイン と ドイツ格付け(前半)",
+       lines:[
+         {t:"リオハと いえば",b:0},{t:"テンプラニーリョ",b:0},
+         {t:"ドイツ とうきゅう",b:1},{t:"カビネット から",b:1},
+         {t:"シュペートレーゼ",b:0},{t:"アウスレーゼ へ",b:0},
+       ],
+       point:"リオハ＝テンプラニーリョ。独格付けは下から Kabinett→Spätlese→Auslese。"},
+      {title:"⑤ ドイツ格付け(後半) 〜甘口の頂点〜",
+       lines:[
+         {t:"もっと あまいの",b:0},{t:"ベーレンアウス",b:0},
+         {t:"こおれば アイス",b:1},{t:"トロッケンが",b:1},
+         {t:"きとうの ちから",b:0},{t:"とうど たかい",b:0},
+       ],
+       point:"Auslese の上に Beerenauslese、凍結果実 Eiswein、頂点が貴腐 Trockenbeerenauslese。"},
+      {title:"⑥ スパークリング 〜製法の見分け〜",
+       lines:[
+         {t:"びんない にじは",b:0},{t:"シャンパーニュ",b:0},
+         {t:"カバも おなじ",b:1},{t:"フランチャコルタ",b:1},
+         {t:"プロセッコ だけ",b:0},{t:"シャルマ ほうしき",b:0},
+       ],
+       point:"瓶内二次発酵＝シャンパーニュ・カバ・フランチャコルタ。プロセッコだけシャルマ方式(タンク内)。"},
+    ],
+  },
+
+  clarinet:{
+    label:"クラリネット版（網羅・8番）",
+    note:"♪オ・パッキャマラド… の曲。歌詞の下の薄い字が原曲の対応位置です。再生ボタンで1行ずつ光ります(音声なし)。",
+    audio:false,
+    verses:[
+      {title:"① フランス 〜ボルドー・ブルゴーニュ・ローヌ〜",
+       lines:[
+         {t:"ボルドーさがんは カベルネで",o:"ぼくの だいすきな クラリネット",r:"A"},
+         {t:"うがんは メルロと カベフランで",o:"パパから もらった クラリネット",r:"A"},
+         {t:"ブルゴーニュ あかは ピノ・ノワール",o:"とっても だいじに してたのに",r:"B"},
+         {t:"しろは シャルドネ おぼえてね",o:"こわれて でない おとが ある",r:"B"},
+         {t:"ボジョレー ガメイだよ",o:"どうしよう どうしよう",r:"C"},
+         {t:"オ・パッキャマラド パッキャマラド パオパオパッパッパ",o:"(くりかえし)",r:"R"},
+         {t:"ローヌは ジー・エス・エム",o:"どうしよう",r:"C2"},
+       ],
+       point:"ボルドー左岸CS/右岸メルロ。ブルゴーニュ赤PN・白CH。ボジョレー=ガメイ。南ローヌ=GSM(グルナッシュ・シラー・ムールヴェードル)。"},
+      {title:"② フランス 〜ロワール・アルザス〜",
+       lines:[
+         {t:"サンセール プイィ・フュメは ソーヴィニヨン",o:"ぼくの だいすきな クラリネット",r:"A"},
+         {t:"ミュスカデ ムロン・ド・ブルゴーニュ",o:"パパから もらった クラリネット",r:"A"},
+         {t:"ヴーヴレ シュナン・ブランだよ",o:"とっても だいじに してたのに",r:"B"},
+         {t:"アルザス リースリング ゲヴュルツも",o:"こわれて でない おとが ある",r:"B"},
+         {t:"ピノ・グリも わすれずに",o:"どうしよう どうしよう",r:"C"},
+         {t:"オ・パッキャマラド パッキャマラド パオパオパッパッパ",o:"(くりかえし)",r:"R"},
+         {t:"たんいつ ひんしゅで",o:"どうしよう",r:"C2"},
+       ],
+       point:"ロワール:サンセール/プイィ・フュメ=SB、ミュスカデ=ムロン・ド・ブルゴーニュ、ヴーヴレ=シュナン・ブラン。アルザスは単一品種表示(リースリング/ゲヴュルツ/ピノ・グリ)。"},
+      {title:"③ イタリア",
+       lines:[
+         {t:"バローロ バルバレスコ ネッビオーロ",o:"ぼくの だいすきな クラリネット",r:"A"},
+         {t:"ピエモンテ きたの めいじょうち",o:"パパから もらった クラリネット",r:"A"},
+         {t:"トスカーナ キャンティ サンジョヴェーゼ",o:"とっても だいじに してたのに",r:"B"},
+         {t:"ヴェネト ソアーヴェ ガルガーネガ",o:"こわれて でない おとが ある",r:"B"},
+         {t:"アマローネ コルヴィーナ",o:"どうしよう どうしよう",r:"C"},
+         {t:"オ・パッキャマラド パッキャマラド パオパオパッパッパ",o:"(くりかえし)",r:"R"},
+         {t:"いちばん上は ドックジー",o:"どうしよう",r:"C2"},
+       ],
+       point:"バローロ/バルバレスコ=ネッビオーロ(ピエモンテ)。キャンティ=サンジョヴェーゼ(トスカーナ)。ソアーヴェ=ガルガーネガ、アマローネ=コルヴィーナ(ヴェネト)。最上位格付け=DOCG。"},
+      {title:"④ スペイン・ドイツ・新世界",
+       lines:[
+         {t:"リオハは テンプラニーリョだよ",o:"ぼくの だいすきな クラリネット",r:"A"},
+         {t:"シェリーは パロミノ ヘレスのち",o:"パパから もらった クラリネット",r:"A"},
+         {t:"ドイツは モーゼル リースリング",o:"とっても だいじに してたのに",r:"B"},
+         {t:"ナパは カベルネ オレゴンはPN",o:"こわれて でない おとが ある",r:"B"},
+         {t:"マールボロ ソーヴィニヨン",o:"どうしよう どうしよう",r:"C"},
+         {t:"オ・パッキャマラド パッキャマラド パオパオパッパッパ",o:"(くりかえし)",r:"R"},
+         {t:"さんちで おぼえる",o:"どうしよう",r:"C2"},
+       ],
+       point:"リオハ=テンプラニーリョ。シェリー=パロミノ(ヘレス)。独はモーゼル=リースリング。ナパ=CS、オレゴン=PN、NZマールボロ=SB。"},
+      {title:"⑤ 格付け制度",
+       lines:[
+         {t:"フランス エー・オー・ピー むかしAOC",o:"ぼくの だいすきな クラリネット",r:"A"},
+         {t:"イタリア ドックジー いちばん上",o:"パパから もらった クラリネット",r:"A"},
+         {t:"スペイン ドーカは リオハと プリオラート",o:"とっても だいじに してたのに",r:"B"},
+         {t:"アメリカ エー・ヴィー・エー さんちめい",o:"こわれて でない おとが ある",r:"B"},
+         {t:"うえから したへ きびしい",o:"どうしよう どうしよう",r:"C"},
+         {t:"オ・パッキャマラド パッキャマラド パオパオパッパッパ",o:"(くりかえし)",r:"R"},
+         {t:"ひんしつ たかい",o:"どうしよう",r:"C2"},
+       ],
+       point:"仏AOP(旧AOC)。伊DOCG最上位。西DOCa=リオハ/プリオラート。米AVA=栽培地域。範囲が狭く規則が厳しい上位ほど品質の信頼性が高い。"},
+      {title:"⑥ ドイツ甘口 と 醸造用語",
+       lines:[
+         {t:"カビネット シュペートレーゼ アウスレーゼ",o:"ぼくの だいすきな クラリネット",r:"A"},
+         {t:"もっと あまいの ベーレンアウス",o:"パパから もらった クラリネット",r:"A"},
+         {t:"こおれば アイス トロッケンちょうてん",o:"とっても だいじに してたのに",r:"B"},
+         {t:"マセラシオン いろを だす",o:"こわれて でない おとが ある",r:"B"},
+         {t:"エム・エル・エフは りんごさん",o:"どうしよう どうしよう",r:"C"},
+         {t:"オ・パッキャマラド パッキャマラド パオパオパッパッパ",o:"(くりかえし)",r:"R"},
+         {t:"にゅうさんに かわる",o:"どうしよう",r:"C2"},
+       ],
+       point:"独甘口は Kabinett→Spätlese→Auslese→Beerenauslese→Eiswein→Trockenbeerenauslese。マセラシオン=色・タンニン抽出。MLF=リンゴ酸→乳酸。"},
+      {title:"⑦ 酒精強化ワイン",
+       lines:[
+         {t:"ポートは ドウロ はっこうとちゅうで",o:"ぼくの だいすきな クラリネット",r:"A"},
+         {t:"ブランデー たして あまくする",o:"パパから もらった クラリネット",r:"A"},
+         {t:"シェリーは フロール フィノと オロロソ",o:"とっても だいじに してたのに",r:"B"},
+         {t:"マデイラ かねつで じゅくせいだ",o:"こわれて でない おとが ある",r:"B"},
+         {t:"マルサラ シチリアとう",o:"どうしよう どうしよう",r:"C"},
+         {t:"オ・パッキャマラド パッキャマラド パオパオパッパッパ",o:"(くりかえし)",r:"R"},
+         {t:"ソレラ システム",o:"どうしよう",r:"C2"},
+       ],
+       point:"ポート=ドウロ、発酵途中で酒精強化し甘口。シェリー=フロール熟成(フィノ/オロロソ)。マデイラ=加熱熟成。マルサラ=シチリア。シェリーの段積み熟成=ソレラシステム。"},
+      {title:"⑧ スパークリング と サービス",
+       lines:[
+         {t:"びんない にじは シャンパーニュ",o:"ぼくの だいすきな クラリネット",r:"A"},
+         {t:"カバと フランチャコルタも おなじ",o:"パパから もらった クラリネット",r:"A"},
+         {t:"プロセッコ だけは シャルマしき",o:"とっても だいじに してたのに",r:"B"},
+         {t:"グレーラ ひんしゅ おぼえてね",o:"こわれて でない おとが ある",r:"B"},
+         {t:"デキャンタージュ おりと かいこう",o:"どうしよう どうしよう",r:"C"},
+         {t:"オ・パッキャマラド パッキャマラド パオパオパッパッパ",o:"(くりかえし)",r:"R"},
+         {t:"ブショネは ティー・シー・エー",o:"どうしよう",r:"C2"},
+       ],
+       point:"瓶内二次発酵=シャンパーニュ/カバ/フランチャコルタ。プロセッコだけシャルマ方式(品種グレーラ)。デキャンタージュ=澱の分離+開香。ブショネ(コルク臭)の原因=TCA。"},
+    ],
+  },
+};
+
+/* キラキラ星のメロディ(C長調・6フレーズ)。各フレーズ7音、末尾を伸ばす。 */
+const NOTE={C:261.63,D:293.66,E:329.63,F:349.23,G:392.00,A:440.00};
+const PHRASES=[
+  ["C","C","G","G","A","A","G"],
+  ["F","F","E","E","D","D","C"],
+  ["G","G","F","F","E","E","D"],
+  ["G","G","F","F","E","E","D"],
+  ["C","C","G","G","A","A","G"],
+  ["F","F","E","E","D","D","C"],
+];
+const QTR=0.42, LASTNOTE=0.78;
+const PHRASE_DUR=QTR*6+LASTNOTE;
+/* クラリネット版・視覚ガイドの1行あたり表示秒(役割別) */
+const CLAR_DUR={A:2.6,B:2.6,C:2.2,R:3.4,C2:1.8};
+
+let audioCtx=null, songTimers=[], playingVerse=-1;
+let currentSong="twinkle";
+
+function buildSong(){
+  const song=SONGS[currentSong];
+  /* スイッチャー */
+  const sw=$("song-switcher");
+  sw.innerHTML="";
+  Object.entries(SONGS).forEach(([key,s])=>{
+    const b=document.createElement("button");
+    b.className="chip";
+    b.textContent=s.label;
+    b.setAttribute("aria-pressed", key===currentSong);
+    b.addEventListener("click",()=>{
+      if(currentSong===key) return;
+      stopSong();
+      currentSong=key;
+      buildSong();
+    });
+    sw.appendChild(b);
+  });
+  $("song-note").textContent=song.note;
+
+  const wrap=$("song-list");
+  wrap.innerHTML="";
+  song.verses.forEach((v,vi)=>{
+    const card=document.createElement("div");
+    card.className="verse";
+    const head=document.createElement("div");
+    head.className="verse-head";
+    head.innerHTML=`<span class="verse-title">${v.title}</span>`;
+    const btn=document.createElement("button");
+    btn.className="btn-play";
+    btn.id="play-"+vi;
+    btn.setAttribute("aria-pressed","false");
+    btn.innerHTML = song.audio ? "▶ メロディ再生" : "▶ 歌詞ガイド";
+    btn.addEventListener("click",()=>toggleVerse(vi));
+    head.appendChild(btn);
+    card.appendChild(head);
+
+    const ly=document.createElement("div");
+    ly.className="lyrics";
+    v.lines.forEach((line,li)=>{
+      const p=document.createElement("div");
+      const cls = song.audio ? (line.b?"bmelo":"amelo") : (line.r==="R"?"refrain":"");
+      p.className="lyric "+cls;
+      p.id=`lyric-${vi}-${li}`;
+      if(line.o){
+        p.innerHTML=`<span class="ly-text">${line.t}</span><span class="ly-orig">${line.o}</span>`;
+      }else{
+        p.textContent=line.t;
+      }
+      ly.appendChild(p);
+    });
+    card.appendChild(ly);
+
+    const pt=document.createElement("div");
+    pt.className="verse-point";
+    pt.innerHTML=`<b>覚えるポイント：</b>${v.point}`;
+    card.appendChild(pt);
+    wrap.appendChild(card);
+  });
+}
+
+function clearSongTimers(){ songTimers.forEach(t=>clearTimeout(t)); songTimers=[]; }
+function clearHighlights(){ document.querySelectorAll(".lyric.singing").forEach(el=>el.classList.remove("singing")); }
+function stopSong(){
+  clearSongTimers(); clearHighlights();
+  if(playingVerse>=0){
+    const b=$("play-"+playingVerse);
+    if(b){ b.setAttribute("aria-pressed","false"); b.innerHTML = SONGS[currentSong].audio ? "▶ メロディ再生" : "▶ 歌詞ガイド"; }
+  }
+  playingVerse=-1;
+}
+
+function toggleVerse(vi){
+  if(playingVerse===vi){ stopSong(); return; }
+  stopSong();
+  playingVerse=vi;
+  const btn=$("play-"+vi);
+  btn.setAttribute("aria-pressed","true");
+  btn.innerHTML="■ 停止";
+
+  if(SONGS[currentSong].audio){ playTwinkle(vi); }
+  else { playVisual(vi); }
+}
+
+/* キラキラ星: 音声＋ハイライト */
+function playTwinkle(vi){
+  if(!audioCtx){
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(AC) audioCtx=new AC();
+  }
+  if(audioCtx && audioCtx.state==="suspended") audioCtx.resume();
+  const t0 = audioCtx ? audioCtx.currentTime+0.06 : 0;
+  PHRASES.forEach((phrase,pi)=>{
+    if(audioCtx){
+      phrase.forEach((nm,ni)=>{
+        const start = t0 + pi*PHRASE_DUR + ni*QTR;
+        const dur = (ni===phrase.length-1)?LASTNOTE:QTR;
+        playNote(NOTE[nm], start, dur*0.92);
+      });
+    }
+    songTimers.push(setTimeout(()=>{
+      clearHighlights();
+      const el=$(`lyric-${vi}-${pi}`);
+      if(el) el.classList.add("singing");
+    }, pi*PHRASE_DUR*1000));
+  });
+  songTimers.push(setTimeout(stopSong, PHRASES.length*PHRASE_DUR*1000+200));
+}
+
+/* クラリネット: 視覚ガイドのみ(音声なし) */
+function playVisual(vi){
+  const lines=SONGS[currentSong].verses[vi].lines;
+  let acc=0;
+  lines.forEach((line,li)=>{
+    const onMs=acc*1000;
+    songTimers.push(setTimeout(()=>{
+      clearHighlights();
+      const el=$(`lyric-${vi}-${li}`);
+      if(el) el.classList.add("singing");
+    }, onMs));
+    acc += (CLAR_DUR[line.r] || 2.4);
+  });
+  songTimers.push(setTimeout(stopSong, acc*1000+200));
+}
+
+function playNote(freq,startTime,dur){
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  osc.type="triangle";
+  osc.frequency.value=freq;
+  const peak=0.18;
+  gain.gain.setValueAtTime(0.0001,startTime);
+  gain.gain.exponentialRampToValueAtTime(peak,startTime+0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001,startTime+dur);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(startTime);
+  osc.stop(startTime+dur+0.02);
+}
+
+buildSong();
+
 </script>
 </body>
 </html>
