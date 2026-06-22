@@ -926,8 +926,8 @@ const SONGS={
 
   clarinet:{
     label:"クラリネット版（網羅・8番）",
-    note:"♪オ・パッキャマラド… の曲。歌詞の下の薄い字が原曲の対応位置です。再生ボタンで1行ずつ光ります(音声なし)。",
-    audio:false,
+    note:"♪オ・パッキャマラド… の曲。歌詞の下の薄い字が原曲の対応位置です。再生ボタンでメロディが鳴り1行ずつ光ります（メロディは耳コピ再現）。",
+    audio:true,
     verses:[
       {title:"① フランス 〜ボルドー・ブルゴーニュ・ローヌ〜",
        lines:[
@@ -1021,9 +1021,11 @@ const SONGS={
   },
 };
 
-/* キラキラ星のメロディ(C長調・6フレーズ)。各フレーズ7音、末尾を伸ばす。 */
-const NOTE={C:261.63,D:293.66,E:329.63,F:349.23,G:392.00,A:440.00};
-const PHRASES=[
+/* メロディ定義。各曲とも「表示行数＝フレーズ数」。フレーズ＝音名の配列。
+   末尾の音を伸ばす。クラリネット版は耳コピ再現(C長調)。 */
+const NOTE={C:261.63,D:293.66,E:329.63,F:349.23,G:392.00,A:440.00,B:493.88,C5:523.25};
+/* キラキラ星(6フレーズ×7音) */
+const MELODY_TWINKLE=[
   ["C","C","G","G","A","A","G"],
   ["F","F","E","E","D","D","C"],
   ["G","G","F","F","E","E","D"],
@@ -1031,17 +1033,26 @@ const PHRASES=[
   ["C","C","G","G","A","A","G"],
   ["F","F","E","E","D","D","C"],
 ];
-const QTR=0.42, LASTNOTE=0.78;
-const PHRASE_DUR=QTR*6+LASTNOTE;
-/* クラリネット版・視覚ガイドの1行あたり表示秒(役割別) */
-const CLAR_DUR={A:2.6,B:2.6,C:2.2,R:3.4,C2:1.8};
+/* クラリネットをこわしちゃった(7フレーズ=表示7行に対応) */
+const MELODY_CLAR=[
+  ["C","C","E","E","G","G","F","E","D","C"],   // A: ぼくのだいすきな クラリネット
+  ["C","C","E","E","G","G","F","E","D","C"],   // A: パパからもらった クラリネット
+  ["E","E","F","G","G","G","F","E","D"],       // B: とってもだいじに してたのに
+  ["E","E","D","C","D","D","C"],               // B: こわれてでない おとがある
+  ["G","G","E","G","G","E"],                   // C: どうしよう どうしよう
+  ["G","C","C","C","C","G","G","G","E","E","G","G","C5"], // R: オ・パッキャマラド…パオパオパッパッパ
+  ["G","E","C"],                               // C2: どうしよう
+];
+const QTR=0.40, LASTNOTE=0.70;
 
 let audioCtx=null, songTimers=[], playingVerse=-1;
 let currentSong="twinkle";
 
+/* 曲ごとのメロディとテンポ */
+function melodyOf(key){ return key==="twinkle" ? MELODY_TWINKLE : MELODY_CLAR; }
+
 function buildSong(){
   const song=SONGS[currentSong];
-  /* スイッチャー */
   const sw=$("song-switcher");
   sw.innerHTML="";
   Object.entries(SONGS).forEach(([key,s])=>{
@@ -1071,7 +1082,7 @@ function buildSong(){
     btn.className="btn-play";
     btn.id="play-"+vi;
     btn.setAttribute("aria-pressed","false");
-    btn.innerHTML = song.audio ? "▶ メロディ再生" : "▶ 歌詞ガイド";
+    btn.innerHTML="▶ メロディ再生";
     btn.addEventListener("click",()=>toggleVerse(vi));
     head.appendChild(btn);
     card.appendChild(head);
@@ -1080,8 +1091,8 @@ function buildSong(){
     ly.className="lyrics";
     v.lines.forEach((line,li)=>{
       const p=document.createElement("div");
-      const cls = song.audio ? (line.b?"bmelo":"amelo") : (line.r==="R"?"refrain":"");
-      p.className="lyric "+cls;
+      const cls = song.audio===false ? "" : (line.b!==undefined ? (line.b?"bmelo":"amelo") : (line.r==="R"?"refrain":""));
+      p.className="lyric "+(line.r==="R"?"refrain":cls);
       p.id=`lyric-${vi}-${li}`;
       if(line.o){
         p.innerHTML=`<span class="ly-text">${line.t}</span><span class="ly-orig">${line.o}</span>`;
@@ -1106,7 +1117,7 @@ function stopSong(){
   clearSongTimers(); clearHighlights();
   if(playingVerse>=0){
     const b=$("play-"+playingVerse);
-    if(b){ b.setAttribute("aria-pressed","false"); b.innerHTML = SONGS[currentSong].audio ? "▶ メロディ再生" : "▶ 歌詞ガイド"; }
+    if(b){ b.setAttribute("aria-pressed","false"); b.innerHTML="▶ メロディ再生"; }
   }
   playingVerse=-1;
 }
@@ -1118,23 +1129,25 @@ function toggleVerse(vi){
   const btn=$("play-"+vi);
   btn.setAttribute("aria-pressed","true");
   btn.innerHTML="■ 停止";
-
-  if(SONGS[currentSong].audio){ playTwinkle(vi); }
-  else { playVisual(vi); }
+  playMelody(vi);
 }
 
-/* キラキラ星: 音声＋ハイライト */
-function playTwinkle(vi){
+/* 汎用メロディ再生＋行ハイライト。フレーズ長は可変。 */
+function playMelody(vi){
   if(!audioCtx){
     const AC=window.AudioContext||window.webkitAudioContext;
     if(AC) audioCtx=new AC();
   }
   if(audioCtx && audioCtx.state==="suspended") audioCtx.resume();
+
+  const phrases=melodyOf(currentSong);
   const t0 = audioCtx ? audioCtx.currentTime+0.06 : 0;
-  PHRASES.forEach((phrase,pi)=>{
+  let acc=0;                       // フレーズ開始の累積秒
+  phrases.forEach((phrase,pi)=>{
+    const phraseStart=acc;
     if(audioCtx){
       phrase.forEach((nm,ni)=>{
-        const start = t0 + pi*PHRASE_DUR + ni*QTR;
+        const start = t0 + phraseStart + ni*QTR;
         const dur = (ni===phrase.length-1)?LASTNOTE:QTR;
         playNote(NOTE[nm], start, dur*0.92);
       });
@@ -1143,23 +1156,8 @@ function playTwinkle(vi){
       clearHighlights();
       const el=$(`lyric-${vi}-${pi}`);
       if(el) el.classList.add("singing");
-    }, pi*PHRASE_DUR*1000));
-  });
-  songTimers.push(setTimeout(stopSong, PHRASES.length*PHRASE_DUR*1000+200));
-}
-
-/* クラリネット: 視覚ガイドのみ(音声なし) */
-function playVisual(vi){
-  const lines=SONGS[currentSong].verses[vi].lines;
-  let acc=0;
-  lines.forEach((line,li)=>{
-    const onMs=acc*1000;
-    songTimers.push(setTimeout(()=>{
-      clearHighlights();
-      const el=$(`lyric-${vi}-${li}`);
-      if(el) el.classList.add("singing");
-    }, onMs));
-    acc += (CLAR_DUR[line.r] || 2.4);
+    }, phraseStart*1000));
+    acc += (phrase.length-1)*QTR + LASTNOTE + 0.12;   // フレーズ間に少し間
   });
   songTimers.push(setTimeout(stopSong, acc*1000+200));
 }
