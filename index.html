@@ -93,6 +93,7 @@ legend{
   background:var(--bordeaux);color:#fff;border-color:var(--bordeaux);font-weight:700;
 }
 .chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.chip:disabled{cursor:not-allowed;opacity:.5}
 .count-note{font-size:.8rem;color:#8a7f78;margin-top:8px}
 
 /* ===== クイズ画面 ===== */
@@ -483,7 +484,11 @@ footer{
   <div class="song-intro card">
     <p>よく知られた童謡のメロディに乗せた替え歌で、頻出ポイントを丸ごと暗記。原曲はいずれも著作権切れの民謡、歌詞はこのアプリのオリジナルです。</p>
     <div class="chip-row" id="song-switcher" style="margin-top:12px"></div>
+    <div class="chip-row" style="margin-top:10px">
+      <button class="chip" id="voice-toggle" type="button" aria-pressed="true">歌詞発話：ON</button>
+    </div>
     <p class="song-tip" id="song-note" style="margin:10px 0 0"></p>
+    <p class="song-tip" id="voice-note" style="margin:4px 0 0"></p>
   </div>
   <div id="song-list"></div>
 </section>
@@ -1046,7 +1051,83 @@ const MELODY_CLAR=[
 const QTR=0.40, LASTNOTE=0.70;
 
 let audioCtx=null, songTimers=[], playingVerse=-1;
+const activeOscillators=new Set();
 let currentSong="twinkle";
+
+/* 端末の日本語音声をメロディに重ねる簡易歌唱モード。
+   Web Speech API は音符単位の音程制御を保証しないため、
+   実際には「メロディ＋リズム同期した読み上げ」として動作する。 */
+const speechSupported = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+const speechEngine = speechSupported ? window.speechSynthesis : null;
+let lyricSpeechEnabled = speechSupported;
+let japaneseVoice = null;
+
+function refreshJapaneseVoice(){
+  if(!speechEngine) return;
+  const voices=speechEngine.getVoices();
+  japaneseVoice = voices.find(v=>v.lang.toLowerCase()==="ja-jp")
+    || voices.find(v=>v.lang.toLowerCase().startsWith("ja"))
+    || null;
+}
+if(speechEngine){
+  refreshJapaneseVoice();
+  speechEngine.addEventListener("voiceschanged",refreshJapaneseVoice);
+}
+
+function idlePlayLabel(){
+  return lyricSpeechEnabled ? "▶ メロディ＋歌詞" : "▶ メロディ再生";
+}
+
+function speechText(text){
+  return text
+    .replace(/PN/g,"ピーエヌ")
+    .replace(/CS/g,"シーエス")
+    .replace(/MLF/g,"エムエルエフ")
+    .replace(/[・／＝＋]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function speakLyric(text,durationSec){
+  if(!speechEngine || !lyricSpeechEnabled) return;
+  const normalized=speechText(text);
+  const utterance=new SpeechSynthesisUtterance(normalized);
+  utterance.lang="ja-JP";
+  if(japaneseVoice) utterance.voice=japaneseVoice;
+  utterance.volume=0.95;
+  utterance.pitch=1.15;
+
+  /* 行の長さとメロディ区間から、おおよその読み上げ速度を決める。
+     実際の速度はOS・ブラウザ・選択音声により異なる。 */
+  const units=[...normalized.replace(/\s/g,"")].length;
+  utterance.rate=Math.max(0.82,Math.min(1.75,units/Math.max(durationSec*4.4,1)));
+
+  /* 前の行が長引いた場合は切り、現在行をフレーズ先頭に合わせる。 */
+  speechEngine.cancel();
+  speechEngine.speak(utterance);
+}
+
+function updateVoiceToggle(){
+  const b=$("voice-toggle");
+  const note=$("voice-note");
+  if(!b || !note) return;
+  if(!speechSupported){
+    b.disabled=true;
+    b.setAttribute("aria-pressed","false");
+    b.textContent="歌詞発話：非対応";
+    note.textContent="このブラウザは音声読み上げに対応していません。メロディのみ再生します。";
+    return;
+  }
+  b.disabled=false;
+  b.setAttribute("aria-pressed",String(lyricSpeechEnabled));
+  b.textContent=`歌詞発話：${lyricSpeechEnabled?"ON":"OFF"}`;
+  note.textContent=lyricSpeechEnabled
+    ? "端末の日本語音声をメロディに重ねます。音程追従ではなく、フレーズ単位の簡易同期です。"
+    : "メロディのみ再生します。";
+  document.querySelectorAll(".btn-play").forEach(btn=>{
+    if(btn.getAttribute("aria-pressed")!=="true") btn.innerHTML=idlePlayLabel();
+  });
+}
 
 /* 曲ごとのメロディとテンポ */
 function melodyOf(key){ return key==="twinkle" ? MELODY_TWINKLE : MELODY_CLAR; }
@@ -1082,7 +1163,7 @@ function buildSong(){
     btn.className="btn-play";
     btn.id="play-"+vi;
     btn.setAttribute("aria-pressed","false");
-    btn.innerHTML="▶ メロディ再生";
+    btn.innerHTML=idlePlayLabel();
     btn.addEventListener("click",()=>toggleVerse(vi));
     head.appendChild(btn);
     card.appendChild(head);
@@ -1115,9 +1196,12 @@ function clearSongTimers(){ songTimers.forEach(t=>clearTimeout(t)); songTimers=[
 function clearHighlights(){ document.querySelectorAll(".lyric.singing").forEach(el=>el.classList.remove("singing")); }
 function stopSong(){
   clearSongTimers(); clearHighlights();
+  activeOscillators.forEach(osc=>{ try{ osc.stop(); }catch(_){ /* already stopped */ } });
+  activeOscillators.clear();
+  if(speechEngine) speechEngine.cancel();
   if(playingVerse>=0){
     const b=$("play-"+playingVerse);
-    if(b){ b.setAttribute("aria-pressed","false"); b.innerHTML="▶ メロディ再生"; }
+    if(b){ b.setAttribute("aria-pressed","false"); b.innerHTML=idlePlayLabel(); }
   }
   playingVerse=-1;
 }
@@ -1139,12 +1223,16 @@ function playMelody(vi){
     if(AC) audioCtx=new AC();
   }
   if(audioCtx && audioCtx.state==="suspended") audioCtx.resume();
+  if(speechEngine) speechEngine.resume();
 
+  const song=SONGS[currentSong];
   const phrases=melodyOf(currentSong);
-  const t0 = audioCtx ? audioCtx.currentTime+0.06 : 0;
+  /* 読み上げ側の起動遅延を見込み、メロディを少しだけ後ろに置く。 */
+  const t0 = audioCtx ? audioCtx.currentTime+0.16 : 0;
   let acc=0;                       // フレーズ開始の累積秒
   phrases.forEach((phrase,pi)=>{
     const phraseStart=acc;
+    const phraseDuration=(phrase.length-1)*QTR+LASTNOTE;
     if(audioCtx){
       phrase.forEach((nm,ni)=>{
         const start = t0 + phraseStart + ni*QTR;
@@ -1152,14 +1240,22 @@ function playMelody(vi){
         playNote(NOTE[nm], start, dur*0.92);
       });
     }
-    songTimers.push(setTimeout(()=>{
+
+    const startPhrase=()=>{
       clearHighlights();
       const el=$(`lyric-${vi}-${pi}`);
       if(el) el.classList.add("singing");
-    }, phraseStart*1000));
-    acc += (phrase.length-1)*QTR + LASTNOTE + 0.12;   // フレーズ間に少し間
+      const line=song.verses[vi]?.lines[pi];
+      if(line) speakLyric(line.t,phraseDuration);
+    };
+
+    /* 先頭行はクリックイベント内で直接開始し、モバイルでも発話を許可されやすくする。 */
+    if(pi===0) startPhrase();
+    else songTimers.push(setTimeout(startPhrase,phraseStart*1000));
+
+    acc += phraseDuration + 0.12;   // フレーズ間に少し間
   });
-  songTimers.push(setTimeout(stopSong, acc*1000+200));
+  songTimers.push(setTimeout(stopSong, acc*1000+250));
 }
 
 function playNote(freq,startTime,dur){
@@ -1172,11 +1268,21 @@ function playNote(freq,startTime,dur){
   gain.gain.exponentialRampToValueAtTime(peak,startTime+0.02);
   gain.gain.exponentialRampToValueAtTime(0.0001,startTime+dur);
   osc.connect(gain).connect(audioCtx.destination);
+  activeOscillators.add(osc);
+  osc.addEventListener("ended",()=>activeOscillators.delete(osc),{once:true});
   osc.start(startTime);
   osc.stop(startTime+dur+0.02);
 }
 
+$("voice-toggle").addEventListener("click",()=>{
+  if(!speechSupported) return;
+  stopSong();
+  lyricSpeechEnabled=!lyricSpeechEnabled;
+  updateVoiceToggle();
+});
+
 buildSong();
+updateVoiceToggle();
 
 </script>
 </body>
