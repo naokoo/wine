@@ -93,7 +93,6 @@ legend{
   background:var(--bordeaux);color:#fff;border-color:var(--bordeaux);font-weight:700;
 }
 .chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.chip:disabled{cursor:not-allowed;opacity:.5}
 .count-note{font-size:.8rem;color:#8a7f78;margin-top:8px}
 
 /* ===== クイズ画面 ===== */
@@ -266,6 +265,47 @@ details.sheet summary:focus-visible{outline:2px solid var(--gold);outline-offset
 .verse-point b{color:var(--bordeaux)}
 .song-tip{font-size:.78rem;color:#9b9088;text-align:center;margin:4px 0 20px}
 
+/* ===== 地図・模擬試験 ===== */
+.qmap{margin-bottom:14px;text-align:center}
+.qmap svg{width:100%;max-width:320px;height:auto}
+.qmap .land{fill:#F1E8DA;stroke:var(--bordeaux);stroke-width:2;stroke-linejoin:round}
+.qmap .mk{fill:#B9AA97}
+.qmap .mk-hl{fill:var(--gold);stroke:var(--bordeaux);stroke-width:2}
+.qmap-note{font-size:.72rem;color:#9b9088;margin-top:2px}
+.exam-box{
+  margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);
+}
+.exam-lead{font-size:.85rem;color:#5d5350;margin-bottom:10px}
+.exam-lead b{color:var(--bordeaux)}
+.choice.picked{border-color:var(--gold);background:#FBF6E8;box-shadow:inset 0 0 0 1px var(--gold)}
+.dot.done{background:var(--bordeaux);border-color:var(--bordeaux)}
+.review-item .rc{color:var(--ng);font-weight:700;margin-top:2px}
+.weak-cats{font-size:.82rem;color:#5d5350;margin-bottom:8px;display:grid;gap:3px}
+.weak-cats .wc-line b{color:var(--bordeaux)}
+.weak-cats .wc-bar{display:inline-block;height:8px;background:var(--gold);border-radius:4px;vertical-align:middle;margin:0 6px 1px 0}
+.drill-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.tts-details{margin-top:10px;font-size:.85rem}
+.tts-details summary{cursor:pointer;color:var(--bordeaux);font-weight:700}
+.tts-details pre{
+  white-space:pre-wrap;background:#F6F0E3;border-radius:8px;
+  padding:12px;font-size:.8rem;line-height:1.8;margin-top:8px;
+  font-family:"Zen Kaku Gothic New",sans-serif;
+}
+.btn-audio{margin-left:8px}
+.btn-audio.has-audio{background:var(--bordeaux);color:#fff;border-color:var(--bordeaux)}
+.fcard{cursor:pointer}
+.fc-answer{
+  font-family:"Shippori Mincho",serif;font-weight:800;
+  font-size:clamp(1.15rem,3.5vw,1.45rem);color:var(--ok);margin-bottom:6px;
+}
+.fc-exp{font-size:.88rem;color:#5d5350}
+.cloze-mask{
+  font-family:"Shippori Mincho",serif;font-weight:800;
+  font-size:clamp(1.2rem,4vw,1.6rem);letter-spacing:.14em;
+  background:#FBF6E8;border:1px dashed var(--gold);border-radius:10px;
+  padding:16px 18px;text-align:center;color:var(--wine);
+}
+
 footer{
   text-align:center;font-size:.75rem;color:#9b9088;padding:0 16px 36px;
 }
@@ -286,6 +326,7 @@ footer{
     <h1>ソムリエ一次試験 直前クイズ<small>頻出論点アンチョコ｜点数・タイマー付き</small></h1>
     <nav role="tablist" aria-label="表示切替">
       <button class="tab" id="tab-quiz" role="tab" aria-selected="true" aria-controls="panel-quiz">クイズ</button>
+      <button class="tab" id="tab-cards" role="tab" aria-selected="false" aria-controls="panel-cards">カード</button>
       <button class="tab" id="tab-sheet" role="tab" aria-selected="false" aria-controls="panel-sheet">暗記シート</button>
       <button class="tab" id="tab-song" role="tab" aria-selected="false" aria-controls="panel-song">暗記ソング</button>
     </nav>
@@ -312,7 +353,20 @@ footer{
         <button class="chip" data-n="999" aria-pressed="false">全問チャレンジ</button>
       </div>
     </fieldset>
-    <button class="btn" id="btn-start">クイズを始める</button>
+    <button class="btn" id="btn-start">クイズを始める（練習・1問ごと解説）</button>
+    <div class="exam-box">
+      <p class="exam-lead"><b>ランダム模擬試験</b>：全カテゴリ（地図・原語表記含む）から20問を無作為出題。本番形式のため解説と正誤は最後にまとめて表示します。</p>
+      <button class="btn ghost" id="btn-exam">模擬試験を始める（20問）</button>
+    </div>
+    <div class="exam-box" id="weak-box">
+      <p class="exam-lead"><b>弱点ドリル（再学習）</b>：間違えた問題だけを、前回と別の問い方や穴抜きカードで再出題。2回連続で正解すると卒業します。</p>
+      <div id="weak-cats" class="weak-cats"></div>
+      <p class="count-note" id="weak-summary"></p>
+      <div class="drill-row">
+        <button class="btn" id="btn-drill">弱点ドリルを始める</button>
+        <button class="chip" id="btn-reset-stats">学習記録をリセット</button>
+      </div>
+    </div>
   </div>
 
   <!-- 出題画面 -->
@@ -327,8 +381,26 @@ footer{
         <span class="q-cat" id="q-cat"></span>
         <span class="stars" id="q-stars" aria-label="頻出度"></span>
       </div>
+      <div class="qmap hidden" id="q-map"></div>
       <p class="q-text" id="q-text"></p>
       <div class="choices" id="choices"></div>
+      <div id="cloze" class="hidden">
+        <p class="cloze-mask" id="cloze-mask"></p>
+        <p class="count-note">伏せ字を頭の中で埋めてから、答えを表示してください。</p>
+        <div class="drill-row">
+          <button class="btn ghost" id="btn-reveal">答えを表示</button>
+        </div>
+        <div id="cloze-answer" class="hidden">
+          <div class="feedback good" style="margin-top:14px">
+            <p class="verdict">答え：<span id="cloze-a"></span></p>
+            <p id="cloze-e"></p>
+          </div>
+          <div class="drill-row">
+            <button class="btn" id="btn-grade-ok">思い出せた</button>
+            <button class="btn ghost" id="btn-grade-ng">まだ怪しい</button>
+          </div>
+        </div>
+      </div>
       <div class="feedback hidden" id="feedback" role="status">
         <p class="verdict" id="fb-verdict"></p>
         <p id="fb-text"></p>
@@ -479,16 +551,58 @@ footer{
 
 </section>
 
+<!-- ============ フラッシュカードパネル ============ -->
+<section id="panel-cards" role="tabpanel" aria-labelledby="tab-cards" class="hidden">
+  <div class="card">
+    <p class="start-lead">選択肢なしで即答する反復用カード。めくって自己申告すると学習記録に反映され、「まだ」にした問題は弱点ドリルにも入ります。</p>
+    <div class="chip-row" id="card-cats"></div>
+    <div class="drill-row">
+      <button class="chip" id="card-weak" aria-pressed="false">苦手のみ（要復習）</button>
+      <span class="count-note" id="card-count"></span>
+    </div>
+  </div>
+  <div class="card fcard hidden" id="fcard">
+    <div class="q-meta">
+      <span class="q-cat" id="fc-cat"></span>
+      <span class="stars" id="fc-stars"></span>
+      <span class="count-note" id="fc-progress" style="margin-left:auto"></span>
+    </div>
+    <div class="qmap hidden" id="fc-map"></div>
+    <p class="q-text" id="fc-front"></p>
+    <div id="fc-back" class="hidden">
+      <p class="fc-answer" id="fc-a"></p>
+      <p class="fc-exp" id="fc-e"></p>
+    </div>
+    <div class="drill-row" id="fc-actions">
+      <button class="btn ghost" id="fc-flip">答えを見る</button>
+    </div>
+    <div class="drill-row hidden" id="fc-grade">
+      <button class="btn" id="fc-ok">覚えた</button>
+      <button class="btn ghost" id="fc-ng">まだ</button>
+    </div>
+  </div>
+  <div class="card hidden" id="fc-done">
+    <p class="result-grade" style="font-size:1.2rem" id="fc-summary"></p>
+    <div class="drill-row">
+      <button class="btn" id="fc-again">もう一周（シャッフル）</button>
+    </div>
+  </div>
+</section>
+
 <!-- ============ 暗記ソングパネル ============ -->
 <section id="panel-song" role="tabpanel" aria-labelledby="tab-song" class="hidden">
   <div class="song-intro card">
     <p>よく知られた童謡のメロディに乗せた替え歌で、頻出ポイントを丸ごと暗記。原曲はいずれも著作権切れの民謡、歌詞はこのアプリのオリジナルです。</p>
     <div class="chip-row" id="song-switcher" style="margin-top:12px"></div>
-    <div class="chip-row" style="margin-top:10px">
-      <button class="chip" id="voice-toggle" type="button" aria-pressed="true">歌詞発話：ON</button>
-    </div>
     <p class="song-tip" id="song-note" style="margin:10px 0 0"></p>
-    <p class="song-tip" id="voice-note" style="margin:4px 0 0"></p>
+    <div class="drill-row">
+      <button class="chip" id="btn-tts-copy">この曲のTTS読みをコピー</button>
+    </div>
+    <details class="tts-details">
+      <summary>TTS読みテキストを表示（Irodori貼り付け用）</summary>
+      <pre id="tts-text"></pre>
+    </details>
+    <p class="song-tip" style="margin:8px 0 0">「<b>audio/曲名/verse01.wav</b>」〜のようにファイルを配置しておくと、▶ を押すだけで自動的にその音声が再生されます（フォルダ構成は下部に記載）。手動で選ぶ場合は各番の「♪ 音声」から選択できます（その場合、ページを閉じると選択は解除されます）。</p>
   </div>
   <div id="song-list"></div>
 </section>
@@ -500,7 +614,7 @@ footer{
 "use strict";
 /* ================= 問題バンク =================
    stars: 3=最頻出(必ず出る) 2=頻出 1=出る・差がつく */
-const CATS = ["産地・品種","格付け制度","醸造用語","酒精強化","スパークリング","サービス"];
+const CATS = ["産地・品種","格付け制度","醸造用語","酒精強化","スパークリング","サービス","地図","原語表記"];
 const BANK = [
 /* ---- 産地・品種 ---- */
 {c:0,s:3,q:["イタリア・ピエモンテ州「バローロ」「バルバレスコ」の主要品種は？", "イタリア・ピエモンテ州「バローロ」「バルバレスコ」で主に栽培される品種は次のどれ？", "イタリア・ピエモンテ州「バローロ」「バルバレスコ」を代表する品種を選びなさい。"],a:"ネッビオーロ",x:["サンジョヴェーゼ","コルヴィーナ","バルベーラ"],e:"バローロ／バルバレスコ＝ネッビオーロは超頻出。ピエモンテ（北西部）とセットで覚える。"},
@@ -651,6 +765,41 @@ const BANK = [
 {c:3,s:2,q:["次のうち酒精強化ワインでないものは？","酒精強化ワインに該当「しない」のはどれ？"],a:"アマローネ",x:["ポートワイン","シェリー","マデイラ"],e:"アマローネは陰干しブドウから造る辛口赤（酒精強化ではない）。"},
 {c:1,s:3,q:["ドイツ・プレディカーツヴァインの等級に含まれないものは？","次のうちプレディカーツヴァインの等級で「ない」ものは？"],a:"グラン・クリュ",x:["カビネット","アウスレーゼ","アイスヴァイン"],e:"グラン・クリュは仏の畑格付け。独の等級6つを順序ごと暗記。"},
 {c:1,s:2,q:["ドイツの格付けで「貴腐ブドウ」と最も関係が深いのは？","貴腐と結びつく等級はどれ？"],a:"トロッケンベーレンアウスレーゼ",x:["カビネット","シュペートレーゼ","アイスヴァイン"],e:"BA／TBA＝貴腐・過熟の粒選り。アイスヴァイン＝健全な凍結ブドウ（貴腐ではない）。"},
+/* ---- 地図（簡略図で産地位置を特定） ---- */
+{c:6,s:3,q:"フランス簡略図。金色の丸が示す産地は？",m:{c:"fr",h:"bordeaux"},a:"ボルドー",x:["ブルゴーニュ","ロワール","ローヌ"],e:"大西洋岸の南西部＝ボルドー。ジロンド川河口周辺。"},
+{c:6,s:3,q:"フランス簡略図。金色の丸が示す産地は？",m:{c:"fr",h:"champagne"},a:"シャンパーニュ",x:["アルザス","ロワール","ブルゴーニュ"],e:"パリの北東＝シャンパーニュ。最北級の銘醸地。"},
+{c:6,s:2,q:"フランス簡略図。金色の丸が示す産地は？",m:{c:"fr",h:"alsace"},a:"アルザス",x:["シャンパーニュ","ブルゴーニュ","ローヌ"],e:"ドイツ国境沿いの東端＝アルザス。"},
+{c:6,s:3,q:"フランス簡略図。金色の丸が示す産地は？",m:{c:"fr",h:"bourgogne"},a:"ブルゴーニュ",x:["ボルドー","ロワール","シャンパーニュ"],e:"内陸の中東部＝ブルゴーニュ。南北に細長い。"},
+{c:6,s:2,q:"フランス簡略図。金色の丸が示す産地は？",m:{c:"fr",h:"loire"},a:"ロワール",x:["ボルドー","ブルゴーニュ","アルザス"],e:"西部を流れるロワール川流域。上流サンセール〜河口ミュスカデ。"},
+{c:6,s:2,q:"フランス簡略図。金色の丸が示す産地は？",m:{c:"fr",h:"rhone"},a:"ローヌ",x:["ブルゴーニュ","ボルドー","ロワール"],e:"南東部ローヌ川流域。北＝シラー、南＝GSM。"},
+{c:6,s:3,q:"イタリア簡略図。金色の丸が示す州は？",m:{c:"it",h:"piemonte"},a:"ピエモンテ州",x:["トスカーナ州","ヴェネト州","ロンバルディア州"],e:"北西部＝ピエモンテ。バローロ／バルバレスコ。"},
+{c:6,s:3,q:"イタリア簡略図。金色の丸が示す州は？",m:{c:"it",h:"toscana"},a:"トスカーナ州",x:["ピエモンテ州","プーリア州","ヴェネト州"],e:"中部＝トスカーナ。キャンティ／ブルネッロ。"},
+{c:6,s:2,q:"イタリア簡略図。金色の丸が示す州は？",m:{c:"it",h:"veneto"},a:"ヴェネト州",x:["ピエモンテ州","ロンバルディア州","トスカーナ州"],e:"北東部＝ヴェネト。ソアーヴェ、アマローネ、プロセッコ。"},
+{c:6,s:2,q:"イタリア簡略図。金色の丸が示す州は？",m:{c:"it",h:"lombardia"},a:"ロンバルディア州",x:["ヴェネト州","ピエモンテ州","トスカーナ州"],e:"北部中央＝ロンバルディア。フランチャコルタ。"},
+{c:6,s:2,q:"イタリア簡略図。金色の丸が示すのは？",m:{c:"it",h:"sicilia"},a:"シチリア島",x:["サルデーニャ島","プーリア州","カラブリア州"],e:"南の島＝シチリア。マルサラの産地。"},
+{c:6,s:2,q:"イタリア簡略図。金色の丸が示す州は？",m:{c:"it",h:"puglia"},a:"プーリア州",x:["トスカーナ州","ヴェネト州","ロンバルディア州"],e:"長靴のかかと＝プーリア。プリミティーヴォ。"},
+{c:6,s:3,q:"スペイン簡略図。金色の丸が示す産地は？",m:{c:"es",h:"rioja"},a:"リオハ",x:["ヘレス","ペネデス","リベラ・デル・ドゥエロ"],e:"北部エブロ川流域＝リオハ。テンプラニーリョ。"},
+{c:6,s:2,q:"スペイン簡略図。金色の丸が示す産地は？",m:{c:"es",h:"jerez"},a:"ヘレス",x:["リオハ","ペネデス","リベラ・デル・ドゥエロ"],e:"南西端アンダルシア＝ヘレス。シェリーの故郷。"},
+{c:6,s:2,q:"スペイン簡略図。金色の丸が示す産地は？",m:{c:"es",h:"penedes"},a:"ペネデス（カタルーニャ）",x:["リオハ","ヘレス","リベラ・デル・ドゥエロ"],e:"北東の地中海岸＝カタルーニャ。カバの中心地。"},
+{c:6,s:2,q:"スペイン簡略図。金色の丸が示す産地は？",m:{c:"es",h:"ribera"},a:"リベラ・デル・ドゥエロ",x:["リオハ","ペネデス","ヘレス"],e:"内陸北部ドゥエロ川流域。リオハと同じテンプラニーリョ。"},
+{c:6,s:2,q:"ドイツ簡略図。金色の丸が示す産地は？",m:{c:"de",h:"mosel"},a:"モーゼル",x:["ラインガウ","ラインヘッセン","バーデン"],e:"南西部モーゼル川の急斜面。リースリングの聖地。"},
+/* ---- 原語表記（仏・独・伊・西・英） ---- */
+{c:7,s:3,q:"フランスの「AOP」の正式表記は？",a:"Appellation d'Origine Protégée",x:["Appellation d'Origine Première","Appellation Officielle Protégée","Application d'Origine Protégée"],e:"保護原産地呼称。旧称は Appellation d'Origine Contrôlée（AOC）。"},
+{c:7,s:2,q:"イタリアの「DOCG」の正式表記は？",a:"Denominazione di Origine Controllata e Garantita",x:["Denominación de Origen Calificada","Denominazione di Origine Garantita e Controllata","Denominação de Origem Controlada"],e:"語順に注意：Controllata e Garantita。1つ目の誤答はスペイン語（DOCa）、3つ目はポルトガル語。"},
+{c:7,s:2,q:"ドイツの「QbA」の正式表記は？",a:"Qualitätswein bestimmter Anbaugebiete",x:["Qualitätswein besonderer Art","Qualität bestimmter Anbaugebiete","Qualitätswein bester Anbaugebiete"],e:"「指定栽培地域の上質ワイン」。bestimmter＝指定された。"},
+{c:7,s:2,q:"アメリカの「AVA」の正式表記は？",a:"American Viticultural Area",x:["American Vineyard Association","American Viticulture Alliance","America Vine Area"],e:"Viticultural＝ブドウ栽培の。"},
+{c:7,s:3,q:"次のうち正しい綴りは？（独・貴腐の最上位）",a:"Trockenbeerenauslese",x:["Trokenbeerenauslese","Trockenbehrenauslese","Trockenbeerenausleze"],e:"Trocken＋Beeren＋Auslese＝乾いた粒の選り摘み。綴り問題は頻出。"},
+{c:7,s:2,q:"「Spätlese」（独）の意味は？",a:"遅摘み",x:["房選り","粒選り","辛口"],e:"spät＝遅い、Lese＝収穫。カタカナだけでなく原語でも判別できるように。"},
+{c:7,s:2,q:"「Trocken」（独）の意味は？",a:"辛口",x:["甘口","遅摘み","発泡"],e:"trocken＝乾いた→辛口。Halbtrocken＝中辛口。"},
+{c:7,s:3,q:"次のうち正しい綴りは？（ソーヴィニヨン・ブラン）",a:"Sauvignon Blanc",x:["Sauvignion Blanc","Savignon Blanc","Sauvignon Blank"],e:"Sauvignon Blanc。品種の綴りは選択肢で細部が問われる。"},
+{c:7,s:3,q:"次のうち正しい綴りは？（シャルドネ）",a:"Chardonnay",x:["Chardonay","Chardonney","Shardonnay"],e:"n が2つ、語尾は -ay。"},
+{c:7,s:2,q:"次のうち正しい綴りは？（ネッビオーロ）",a:"Nebbiolo",x:["Nebiolo","Nebbiollo","Nebbioro"],e:"b が2つ、l は1つ。nebbia（霧）に由来。"},
+{c:7,s:2,q:"次のうち正しい綴りは？（テンプラニーリョ）",a:"Tempranillo",x:["Tempranilo","Temparanillo","Tempranirro"],e:"ll はスペイン語でリャ行。temprano（早い）に由来する早熟品種。"},
+{c:7,s:2,q:"「Millésime」（仏）の意味は？",a:"ヴィンテージ（収穫年）",x:["畑の格付け","澱","補糖"],e:"ミレジム＝収穫年。Millésimé＝単一年のシャンパーニュ。"},
+{c:7,s:2,q:"「Vendange」（仏）の意味は？",a:"収穫",x:["瓶詰め","熟成","剪定"],e:"ヴァンダンジュ＝ブドウの収穫。Vendange tardive＝遅摘み（アルザス）。"},
+{c:7,s:1,q:"「Cave」（仏）の意味は？",a:"ワインの貯蔵庫",x:["収穫","ブドウ畑","酒だる"],e:"カーヴ＝地下の貯蔵庫。"},
+{c:7,s:2,q:"「Récoltant-Manipulant」（仏・RM）の意味は？",a:"自家栽培のブドウで醸造する生産者",x:["ブドウを購入して醸造する生産者","協同組合","熟成専門の業者"],e:"Récoltant＝収穫する人。NM＝Négociant-Manipulant、CM＝協同組合。"},
+{c:7,s:2,q:"「Vino de Pago」（西）の意味は？",a:"単一畑のワイン",x:["地ワイン","テーブルワイン","発泡ワイン"],e:"Pago＝（単一の）畑・地所。スペインの特別格付け。"},
 ];
 
 /* ================= 状態 ================= */
@@ -662,15 +811,17 @@ let timerId=null, startTime=0, elapsed=0;
 
 /* ================= タブ ================= */
 function switchTab(which){
-  const tabs={quiz:"panel-quiz",sheet:"panel-sheet",song:"panel-song"};
+  const tabs={quiz:"panel-quiz",cards:"panel-cards",sheet:"panel-sheet",song:"panel-song"};
   for(const [name,panel] of Object.entries(tabs)){
     const sel = (name===which);
     $("tab-"+name).setAttribute("aria-selected",sel);
     $(panel).classList.toggle("hidden",!sel);
   }
   if(which!=="song") stopSong();
+  if(which==="cards" && cardDeck.length===0) buildCardDeck();
 }
 $("tab-quiz").addEventListener("click",()=>switchTab("quiz"));
+$("tab-cards").addEventListener("click",()=>switchTab("cards"));
 $("tab-sheet").addEventListener("click",()=>switchTab("sheet"));
 $("tab-song").addEventListener("click",()=>switchTab("song"));
 
@@ -743,9 +894,126 @@ function stopTimer(){
 }
 
 /* ================= クイズ進行 ================= */
-function startQuiz(){
-  const pool=shuffle(BANK.filter(q=>selectedCats.has(q.c)));
-  quiz=pool.slice(0,Math.min(numQ,pool.length));
+/* ===== 学習記録(安全ストレージ: 使えない環境ではセッション内メモリに自動フォールバック) ===== */
+BANK.forEach((q,i)=>{ q.id=i; });
+const statStore={
+  load(){ try{ const s=localStorage.getItem("somq-stats-v1"); return s?JSON.parse(s):{}; }catch(e){ return {}; } },
+  save(o){ try{ localStorage.setItem("somq-stats-v1",JSON.stringify(o)); }catch(e){ /* メモリのみ */ } }
+};
+let stats=statStore.load();
+function ensureStat(id){ if(!stats[id]) stats[id]={w:0,r:0,streak:0,lp:-1}; return stats[id]; }
+function recordStat(id,ok){
+  const s=ensureStat(id);
+  if(ok){ s.r++; s.streak++; } else { s.w++; s.streak=0; }
+  statStore.save(stats);
+}
+function setLastPhrase(id,pi){ ensureStat(id).lp=pi; statStore.save(stats); }
+function needsReview(q){ const s=stats[q.id]; return !!s && s.w>0 && s.streak<2; }
+function weakPool(){
+  return BANK.filter(needsReview)
+    .sort((a,b)=>{ const sa=stats[a.id],sb=stats[b.id]; return (sb.w-sb.streak)-(sa.w-sa.streak); });
+}
+/* 答えの文字を半分伏せる(穴抜き)。区切り記号は残す */
+function maskAnswer(a){
+  const keep="・（）()／/ 、。'’-→×";
+  let n=0,out="";
+  for(const ch of a){
+    if(keep.includes(ch)){ out+=ch; continue; }
+    out += (n%2===0)? ch : "〇";
+    n++;
+  }
+  return out;
+}
+function renderWeakBox(){
+  const pool=weakPool();
+  const btn=$("btn-drill");
+  /* カテゴリ別の累計正答率 */
+  const agg={};
+  for(const [id,s] of Object.entries(stats)){
+    const q=BANK[+id]; if(!q) continue;
+    const c=q.c; agg[c]=agg[c]||{r:0,w:0,review:0};
+    agg[c].r+=s.r; agg[c].w+=s.w;
+    if(needsReview(q)) agg[c].review++;
+  }
+  const box=$("weak-cats");
+  box.innerHTML="";
+  const entries=Object.entries(agg).filter(([,v])=>v.r+v.w>0)
+    .sort((a,b)=>(a[1].r/(a[1].r+a[1].w))-(b[1].r/(b[1].r+b[1].w)));
+  entries.forEach(([c,v])=>{
+    const pct=Math.round(v.r/(v.r+v.w)*100);
+    const line=document.createElement("p");
+    line.className="wc-line";
+    line.innerHTML=`<span class="wc-bar" style="width:${Math.max(4,pct*0.6)}px"></span>`+
+      `<b>${CATS[+c]}</b> 正答率${pct}%（${v.r+v.w}回）`+
+      (v.review?`　要復習${v.review}問`:"");
+    box.appendChild(line);
+  });
+  if(pool.length===0){
+    $("weak-summary").textContent = entries.length
+      ? "要復習の問題はありません。すべて卒業済みです。"
+      : "まだ学習記録がありません。クイズや模擬試験を解くと、間違えた問題がここに溜まります。";
+    btn.disabled=true; btn.style.opacity=.5;
+  }else{
+    $("weak-summary").textContent=`要復習 ${pool.length} 問（間違いが多い順に最大15問を出題）`;
+    btn.disabled=false; btn.style.opacity=1;
+  }
+}
+
+let examMode=false, drillMode=false, drillFormats=[];
+const MAPS={
+  fr:{label:"フランス", vb:"0 0 200 200",
+      paths:["M100,15 L150,35 L180,75 L165,120 L175,152 L130,185 L75,180 L35,150 L20,100 L40,55 Z"],
+      markers:{champagne:[125,48],alsace:[160,64],loire:[72,90],bourgogne:[128,88],bordeaux:[58,132],rhone:[132,130]}},
+  it:{label:"イタリア", vb:"0 0 200 200",
+      paths:["M55,25 L110,28 L122,48 L98,72 L102,100 L132,112 L162,106 L172,126 L146,136 L116,126 L96,142 L84,120 L68,80 L48,52 Z",
+             "M92,158 L130,164 L108,186 Z"],
+      markers:{piemonte:[62,44],lombardia:[85,40],veneto:[108,40],toscana:[82,84],puglia:[158,118],sicilia:[110,170]}},
+  es:{label:"スペイン", vb:"0 0 200 200",
+      paths:["M30,62 L72,36 L150,42 L172,62 L152,92 L162,112 L120,142 L62,152 L34,122 L24,92 Z"],
+      markers:{rioja:[104,58],penedes:[148,62],ribera:[80,68],jerez:[58,132]}},
+  de:{label:"ドイツ", vb:"0 0 200 200",
+      paths:["M70,20 L122,26 L136,62 L120,100 L130,140 L92,162 L56,142 L44,92 L60,54 Z"],
+      markers:{mosel:[58,112],rheingau:[74,118],rheinhessen:[80,132]}},
+};
+function renderMap(m){
+  const map=MAPS[m.c];
+  if(!map) return "";
+  let svg=`<svg viewBox="${map.vb}" role="img" aria-label="${map.label}の簡略地図">`;
+  map.paths.forEach(p=>{ svg+=`<path class="land" d="${p}"/>`; });
+  for(const [id,[x,y]] of Object.entries(map.markers)){
+    if(id===m.h) svg+=`<circle class="mk-hl" cx="${x}" cy="${y}" r="9"/>`;
+    else svg+=`<circle class="mk" cx="${x}" cy="${y}" r="4.5"/>`;
+  }
+  svg+="</svg>";
+  return svg+`<p class="qmap-note">※${map.label}：形状は位置関係を示す簡略図です</p>`;
+}
+
+function startQuiz(exam){
+  examMode = (exam===true);
+  drillMode=false; drillFormats=[];
+  const pool = examMode
+    ? shuffle(BANK.slice())
+    : shuffle(BANK.filter(q=>selectedCats.has(q.c)));
+  quiz=pool.slice(0, Math.min(examMode?20:numQ, pool.length));
+  idx=0; correct=0; results=[]; elapsed=0;
+  $("timer").textContent="00:00";
+  $("screen-start").classList.add("hidden");
+  $("screen-result").classList.add("hidden");
+  $("screen-quiz").classList.remove("hidden");
+  renderDots();
+  startTimer();
+  renderQuestion();
+}
+
+function startDrill(){
+  const pool=weakPool();
+  if(pool.length===0) return;
+  examMode=false; drillMode=true;
+  quiz=pool.slice(0,15);
+  /* 出題順は軽くシャッフル(最頻誤答が固まりすぎないように) */
+  quiz=shuffle(quiz);
+  /* 形式: 2回以上間違えた問題と3問に1問は穴抜きカード */
+  drillFormats=quiz.map((q,i)=> (stats[q.id].w>=2 || i%3===2) ? "cloze" : "mc");
   idx=0; correct=0; results=[]; elapsed=0;
   $("timer").textContent="00:00";
   $("screen-start").classList.add("hidden");
@@ -762,22 +1030,43 @@ function renderDots(){
   quiz.forEach((_,i)=>{
     const d=document.createElement("span");
     d.className="dot";
-    if(i<results.length) d.classList.add(results[i].ok?"ok":"ng");
+    if(i<results.length) d.classList.add(examMode ? "done" : (results[i].ok?"ok":"ng"));
     else if(i===idx) d.classList.add("now");
     wrap.appendChild(d);
   });
 }
 
 let currentPhrase="";
+function pickPhrase(q){
+  if(!Array.isArray(q.q)) return q.q;
+  let pi=Math.floor(Math.random()*q.q.length);
+  /* 弱点ドリルでは前回出題と別の問い方を優先(別な言葉で再学習) */
+  const lp=stats[q.id]?stats[q.id].lp:-1;
+  if(drillMode && q.q.length>1 && pi===lp){ pi=(pi+1)%q.q.length; }
+  setLastPhrase(q.id,pi);
+  return q.q[pi];
+}
 function renderQuestion(){
   answered=false;
   const q=quiz[idx];
-  /* qは文字列または複数フレーズの配列。配列ならランダムに問い方を選ぶ */
-  currentPhrase = Array.isArray(q.q) ? q.q[Math.floor(Math.random()*q.q.length)] : q.q;
+  currentPhrase = pickPhrase(q);
   $("progress-label").textContent=`第 ${idx+1} 問 / 全 ${quiz.length} 問`;
   $("q-cat").textContent=CATS[q.c];
   $("q-stars").textContent="★".repeat(q.s);
   $("q-text").textContent=currentPhrase;
+  const mapBox=$("q-map");
+  if(q.m){ mapBox.innerHTML=renderMap(q.m); mapBox.classList.remove("hidden"); }
+  else { mapBox.innerHTML=""; mapBox.classList.add("hidden"); }
+
+  /* 穴抜きカード(弱点ドリル専用形式) */
+  const isCloze = drillMode && drillFormats[idx]==="cloze";
+  $("cloze").classList.toggle("hidden",!isCloze);
+  $("choices").classList.toggle("hidden",isCloze);
+  if(isCloze){
+    $("cloze-mask").textContent=maskAnswer(q.a);
+    $("cloze-answer").classList.add("hidden");
+    $("btn-reveal").disabled=false;
+  }
   $("feedback").classList.add("hidden");
   $("btn-next").classList.add("hidden");
 
@@ -795,16 +1084,30 @@ function renderQuestion(){
   renderDots();
 }
 
+const EXAM_ADVANCE_MS=350;
 function answer(btn,text){
   if(answered) return;
   answered=true;
   const q=quiz[idx];
   const ok=(text===q.a);
   if(ok) correct++;
-  results.push({ok, q, phrase:currentPhrase});
+  results.push({ok, q, phrase:currentPhrase, chosen:text});
+  recordStat(q.id, ok);
+
+  document.querySelectorAll("#choices .choice").forEach(b=>{ b.disabled=true; });
+
+  if(examMode){
+    /* 本番形式: 正誤を見せず、選択のみ示して自動で次へ */
+    btn.classList.add("picked");
+    renderDots();
+    setTimeout(()=>{
+      if(idx===quiz.length-1){ showResult(); }
+      else { idx++; renderQuestion(); }
+    }, EXAM_ADVANCE_MS);
+    return;
+  }
 
   document.querySelectorAll("#choices .choice").forEach(b=>{
-    b.disabled=true;
     const t=b.querySelector("span:last-child").textContent;
     if(t===q.a) b.classList.add("correct");
   });
@@ -827,6 +1130,29 @@ $("btn-next").addEventListener("click",()=>{
   else { idx++; renderQuestion(); }
 });
 
+/* 穴抜きカード: 表示→自己申告 */
+$("btn-reveal").addEventListener("click",()=>{
+  const q=quiz[idx];
+  $("cloze-a").textContent=q.a;
+  $("cloze-e").textContent=q.e;
+  $("cloze-answer").classList.remove("hidden");
+  $("btn-reveal").disabled=true;
+});
+function gradeCloze(ok){
+  if(answered) return;
+  answered=true;
+  const q=quiz[idx];
+  if(ok) correct++;
+  results.push({ok, q, phrase:currentPhrase, chosen: ok?"穴抜き：思い出せた":"穴抜き：思い出せず"});
+  recordStat(q.id, ok);
+  $("btn-next").textContent = (idx===quiz.length-1) ? "結果を見る" : "次の問題へ";
+  $("btn-next").classList.remove("hidden");
+  $("btn-next").focus();
+  renderDots();
+}
+$("btn-grade-ok").addEventListener("click",()=>gradeCloze(true));
+$("btn-grade-ng").addEventListener("click",()=>gradeCloze(false));
+
 /* ================= 結果 ================= */
 function showResult(){
   stopTimer();
@@ -837,6 +1163,10 @@ function showResult(){
   $("result-score").textContent=pct;
   $("result-sub").textContent=`正解 ${correct} / ${quiz.length} 問　・　所要時間 ${fmt(elapsed)}`;
 
+  if(drillMode){
+    const remain=weakPool().length;
+    $("result-sub").textContent += `　・　要復習 残り ${remain} 問`;
+  }
   let grade;
   if(pct===100) grade="グラン・クリュ級！完璧です";
   else if(pct>=80) grade="プルミエ・クリュ級！合格圏";
@@ -859,18 +1189,121 @@ function showResult(){
     wrong.forEach(r=>{
       const d=document.createElement("div");
       d.className="review-item";
-      d.innerHTML=`<p class="rq">Q. ${r.phrase}</p><p class="ra">A. ${r.q.a}</p><p class="rx">${r.q.e}</p>`;
+      const chosenLine = examMode ? `<p class="rc">あなたの解答：${r.chosen}</p>` : "";
+      d.innerHTML=`<p class="rq">Q. ${r.phrase}</p>${chosenLine}<p class="ra">A. ${r.q.a}</p><p class="rx">${r.q.e}</p>`;
       list.appendChild(d);
     });
   }
 }
 
-$("btn-start").addEventListener("click",startQuiz);
-$("btn-retry").addEventListener("click",startQuiz);
+$("btn-start").addEventListener("click",()=>startQuiz(false));
+$("btn-exam").addEventListener("click",()=>startQuiz(true));
+$("btn-drill").addEventListener("click",startDrill);
+$("btn-retry").addEventListener("click",()=>{ if(drillMode){ startDrill(); } else { startQuiz(examMode); } });
 $("btn-back").addEventListener("click",()=>{
   $("screen-result").classList.add("hidden");
   $("screen-start").classList.remove("hidden");
+  renderWeakBox();
 });
+$("btn-reset-stats").addEventListener("click",()=>{
+  stats={}; statStore.save(stats); renderWeakBox();
+});
+
+/* ================= フラッシュカード ================= */
+let cardCats=new Set(CATS.map((_,i)=>i));
+let cardWeakOnly=false;
+let cardDeck=[], cardIdx=0, cardOk=0, cardNg=0;
+
+function renderCardChips(){
+  const wrap=$("card-cats");
+  wrap.innerHTML="";
+  const all=document.createElement("button");
+  all.className="chip";
+  all.textContent="すべて";
+  all.setAttribute("aria-pressed", cardCats.size===CATS.length);
+  all.addEventListener("click",()=>{ cardCats=new Set(CATS.map((_,i)=>i)); renderCardChips(); buildCardDeck(); });
+  wrap.appendChild(all);
+  CATS.forEach((name,i)=>{
+    const b=document.createElement("button");
+    b.className="chip";
+    b.textContent=name;
+    b.setAttribute("aria-pressed", cardCats.has(i) && cardCats.size!==CATS.length);
+    b.addEventListener("click",()=>{
+      if(cardCats.size===CATS.length){ cardCats=new Set([i]); }
+      else if(cardCats.has(i)){ if(cardCats.size>1) cardCats.delete(i); }
+      else { cardCats.add(i); }
+      renderCardChips(); buildCardDeck();
+    });
+    wrap.appendChild(b);
+  });
+}
+$("card-weak").addEventListener("click",()=>{
+  cardWeakOnly=!cardWeakOnly;
+  $("card-weak").setAttribute("aria-pressed",cardWeakOnly);
+  buildCardDeck();
+});
+
+function buildCardDeck(){
+  cardDeck=shuffle(BANK.filter(q=>cardCats.has(q.c) && (!cardWeakOnly || needsReview(q))));
+  cardIdx=0; cardOk=0; cardNg=0;
+  $("fc-done").classList.add("hidden");
+  if(cardDeck.length===0){
+    $("card-count").textContent = cardWeakOnly ? "要復習のカードはありません" : "対象カードがありません";
+    $("fcard").classList.add("hidden");
+    return;
+  }
+  $("card-count").textContent=`${cardDeck.length} 枚`;
+  $("fcard").classList.remove("hidden");
+  renderCard();
+}
+
+function renderCard(){
+  const q=cardDeck[cardIdx];
+  $("fc-cat").textContent=CATS[q.c];
+  $("fc-stars").textContent="★".repeat(q.s);
+  $("fc-progress").textContent=`${cardIdx+1} / ${cardDeck.length}`;
+  const phrase = Array.isArray(q.q) ? q.q[Math.floor(Math.random()*q.q.length)] : q.q;
+  $("fc-front").textContent=phrase;
+  const mapBox=$("fc-map");
+  if(q.m){ mapBox.innerHTML=renderMap(q.m); mapBox.classList.remove("hidden"); }
+  else { mapBox.innerHTML=""; mapBox.classList.add("hidden"); }
+  $("fc-back").classList.add("hidden");
+  $("fc-actions").classList.remove("hidden");
+  $("fc-grade").classList.add("hidden");
+}
+
+function flipCard(){
+  if(!$("fc-back").classList.contains("hidden")) return;
+  const q=cardDeck[cardIdx];
+  $("fc-a").textContent=q.a;
+  $("fc-e").textContent=q.e;
+  $("fc-back").classList.remove("hidden");
+  $("fc-actions").classList.add("hidden");
+  $("fc-grade").classList.remove("hidden");
+}
+$("fc-flip").addEventListener("click",e=>{ e.stopPropagation(); flipCard(); });
+$("fcard").addEventListener("click",()=>flipCard());
+
+function gradeCard(ok){
+  const q=cardDeck[cardIdx];
+  recordStat(q.id, ok);
+  if(ok) cardOk++; else cardNg++;
+  renderWeakBox();
+  cardIdx++;
+  if(cardIdx>=cardDeck.length){
+    $("fcard").classList.add("hidden");
+    $("fc-done").classList.remove("hidden");
+    $("fc-summary").textContent=`一周完了。覚えた ${cardOk} 枚 ／ まだ ${cardNg} 枚。「まだ」は弱点ドリルにも入っています。`;
+    return;
+  }
+  renderCard();
+}
+$("fc-ok").addEventListener("click",e=>{ e.stopPropagation(); gradeCard(true); });
+$("fc-ng").addEventListener("click",e=>{ e.stopPropagation(); gradeCard(false); });
+$("fc-again").addEventListener("click",buildCardDeck);
+renderCardChips();
+
+renderWeakBox();
 
 /* ================= 暗記ソング =================
    原曲はいずれも著作権切れの民謡。歌詞はこのアプリのオリジナル。
@@ -1022,6 +1455,39 @@ const SONGS={
          {t:"ブショネは ティー・シー・エー",o:"どうしよう",r:"C2"},
        ],
        point:"瓶内二次発酵=シャンパーニュ/カバ/フランチャコルタ。プロセッコだけシャルマ方式(品種グレーラ)。デキャンタージュ=澱の分離+開香。ブショネ(コルク臭)の原因=TCA。"},
+      {title:"⑨ シャンパーニュ工程 〜順序が命〜",
+       lines:[
+         {t:"ティラージュで つめて にじはっこう",o:"ぼくの だいすきな クラリネット",r:"A"},
+         {t:"ルミュアージュで おりを あつめ",o:"パパから もらった クラリネット",r:"A"},
+         {t:"デゴルジュマンで おりを ぬいて",o:"とっても だいじに してたのに",r:"B"},
+         {t:"さいごに ドサージュ あまさ きめる",o:"こわれて でない おとが ある",r:"B"},
+         {t:"じゅんばん だいじだよ",o:"どうしよう どうしよう",r:"C"},
+         {t:"オ・パッキャマラド パッキャマラド パオパオパッパッパ",o:"(くりかえし)",r:"R"},
+         {t:"テ・ル・デ・ド だ",o:"どうしよう",r:"C2"},
+       ],
+       point:"ティラージュ(瓶詰め・二次発酵開始)→ルミュアージュ(動瓶)→デゴルジュマン(澱抜き)→ドサージュ(甘辛調整)。頭文字「テ・ル・デ・ド」で順序を固定する。"},
+      {title:"⑩ 新世界と日本 〜国と品種のペア〜",
+       lines:[
+         {t:"アルゼンチンは マルベックだよ",o:"ぼくの だいすきな クラリネット",r:"A"},
+         {t:"チリは カルメネール ボルドーうまれ",o:"パパから もらった クラリネット",r:"A"},
+         {t:"みなみアフリカ ピノタージュ",o:"とっても だいじに してたのに",r:"B"},
+         {t:"ピノとサンソーの こどもだよ",o:"こわれて でない おとが ある",r:"B"},
+         {t:"にほんは こうしゅうだ",o:"どうしよう どうしよう",r:"C"},
+         {t:"オ・パッキャマラド パッキャマラド パオパオパッパッパ",o:"(くりかえし)",r:"R"},
+         {t:"ベーリーエーもね",o:"どうしよう",r:"C2"},
+       ],
+       point:"アルゼンチン=マルベック、チリ=カルメネール(ボルドー起源)、南アフリカ=ピノタージュ(ピノ・ノワール×サンソー)、日本=甲州(白)とマスカット・ベーリーA(黒)。"},
+      {title:"⑪ ロワールのひっかけ 〜フュメとフュイッセ〜",
+       lines:[
+         {t:"プイィ・フュメは ソーヴィニヨンで",o:"ぼくの だいすきな クラリネット",r:"A"},
+         {t:"プイィ・フュイッセは シャルドネだ",o:"パパから もらった クラリネット",r:"A"},
+         {t:"ミュスカデ ムロン・ド・ブルゴーニュ",o:"とっても だいじに してたのに",r:"B"},
+         {t:"ヴーヴレ シュナンだ まちがえない",o:"こわれて でない おとが ある",r:"B"},
+         {t:"フュメと フュイッセ",o:"どうしよう どうしよう",r:"C"},
+         {t:"オ・パッキャマラド パッキャマラド パオパオパッパッパ",o:"(くりかえし)",r:"R"},
+         {t:"にてるが べつもの",o:"どうしよう",r:"C2"},
+       ],
+       point:"プイィ・フュメ(ロワール)=ソーヴィニヨン・ブラン、プイィ・フュイッセ(ブルゴーニュ/マコネ)=シャルドネ。ミュスカデ=ムロン・ド・ブルゴーニュ、ヴーヴレ=シュナン・ブラン。"},
     ],
   },
 };
@@ -1050,83 +1516,142 @@ const MELODY_CLAR=[
 ];
 const QTR=0.40, LASTNOTE=0.70;
 
-let audioCtx=null, songTimers=[], playingVerse=-1;
-const activeOscillators=new Set();
+let audioCtx=null, songTimers=[], playingVerse=-1, curAudio=null;
 let currentSong="twinkle";
-
-/* 端末の日本語音声をメロディに重ねる簡易歌唱モード。
-   Web Speech API は音符単位の音程制御を保証しないため、
-   実際には「メロディ＋リズム同期した読み上げ」として動作する。 */
-const speechSupported = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
-const speechEngine = speechSupported ? window.speechSynthesis : null;
-let lyricSpeechEnabled = speechSupported;
-let japaneseVoice = null;
-
-function refreshJapaneseVoice(){
-  if(!speechEngine) return;
-  const voices=speechEngine.getVoices();
-  japaneseVoice = voices.find(v=>v.lang.toLowerCase()==="ja-jp")
-    || voices.find(v=>v.lang.toLowerCase().startsWith("ja"))
-    || null;
+const customAudio={twinkle:{},clarinet:{}};
+const autoAudio={twinkle:{},clarinet:{}};   // 自動検出済みフラグ(手動選択と区別)
+const AUDIO_DIR="audio";
+/* 命名規約: audio/{曲キー}/verse01.wav 〜（2桁ゼロ埋め）。GitHub Pages等でこの位置に置くと自動再生。 */
+function audioPathFor(key,vi){
+  return `${AUDIO_DIR}/${key}/verse${String(vi+1).padStart(2,"0")}.wav`;
 }
-if(speechEngine){
-  refreshJapaneseVoice();
-  speechEngine.addEventListener("voiceschanged",refreshJapaneseVoice);
-}
-
-function idlePlayLabel(){
-  return lyricSpeechEnabled ? "▶ メロディ＋歌詞" : "▶ メロディ再生";
-}
-
-function speechText(text){
-  return text
-    .replace(/PN/g,"ピーエヌ")
-    .replace(/CS/g,"シーエス")
-    .replace(/MLF/g,"エムエルエフ")
-    .replace(/[・／＝＋]/g," ")
-    .replace(/\s+/g," ")
-    .trim();
+function probeVerseAudio(key,vi){
+  if(customAudio[key][vi]) return;                 // 既に手動選択済みなら上書きしない
+  const path=audioPathFor(key,vi);
+  /* fetchはfile://直開きでブロックされるため、audio要素で存在確認する。
+     audioのメタデータ読み込みは http(s) / file:// の両方で動作する。 */
+  try{
+    const probe=new Audio();
+    probe.preload="metadata";
+    probe.addEventListener("loadedmetadata",()=>{
+      customAudio[key][vi]=path;
+      autoAudio[key][vi]=true;
+      const chip=$("audio-set-"+vi);
+      if(chip && currentSong===key){
+        chip.textContent="♪ 自動検出（フォルダ）";
+        chip.classList.add("has-audio");
+      }
+    },{once:true});
+    probe.addEventListener("error",()=>{ /* 見つからない場合は無視(手動選択にフォールバック) */ },{once:true});
+    probe.src=path;
+  }catch(e){ /* Audioが使えない環境。手動選択にフォールバック。 */ }
 }
 
-function speakLyric(text,durationSec){
-  if(!speechEngine || !lyricSpeechEnabled) return;
-  const normalized=speechText(text);
-  const utterance=new SpeechSynthesisUtterance(normalized);
-  utterance.lang="ja-JP";
-  if(japaneseVoice) utterance.voice=japaneseVoice;
-  utterance.volume=0.95;
-  utterance.pitch=1.15;
-
-  /* 行の長さとメロディ区間から、おおよその読み上げ速度を決める。
-     実際の速度はOS・ブラウザ・選択音声により異なる。 */
-  const units=[...normalized.replace(/\s/g,"")].length;
-  utterance.rate=Math.max(0.82,Math.min(1.75,units/Math.max(durationSec*4.4,1)));
-
-  /* 前の行が長引いた場合は切り、現在行をフレーズ先頭に合わせる。 */
-  speechEngine.cancel();
-  speechEngine.speak(utterance);
+/* TTS読みテキスト(記号なし・Irodori貼り付け用) */
+const NUM_JA=["","いち","に","さん","よん","ご","ろく","なな","はち","きゅう","じゅう","じゅういち","じゅうに"];
+function ttsRep(t){
+  return t.replace(/AOC/g,"エー・オー・シー").replace(/PN/g,"ピーエヌ").replace(/GSM/g,"ジーエスエム");
 }
-
-function updateVoiceToggle(){
-  const b=$("voice-toggle");
-  const note=$("voice-note");
-  if(!b || !note) return;
-  if(!speechSupported){
-    b.disabled=true;
-    b.setAttribute("aria-pressed","false");
-    b.textContent="歌詞発話：非対応";
-    note.textContent="このブラウザは音声読み上げに対応していません。メロディのみ再生します。";
-    return;
-  }
-  b.disabled=false;
-  b.setAttribute("aria-pressed",String(lyricSpeechEnabled));
-  b.textContent=`歌詞発話：${lyricSpeechEnabled?"ON":"OFF"}`;
-  note.textContent=lyricSpeechEnabled
-    ? "端末の日本語音声をメロディに重ねます。音程追従ではなく、フレーズ単位の簡易同期です。"
-    : "メロディのみ再生します。";
-  document.querySelectorAll(".btn-play").forEach(btn=>{
-    if(btn.getAttribute("aria-pressed")!=="true") btn.innerHTML=idlePlayLabel();
+function ttsText(key){
+  const s=SONGS[key];
+  const out=[];
+  s.verses.forEach((v,i)=>{
+    let title=v.title.replace(/^[①-⑳]\s*/,"").replace(/[〜~]/g,"").replace(/[()（）]/g,"、").trim().replace(/\s+/g,"、").replace(/、+/g,"、").replace(/、$/,"");
+    out.push(`だい${NUM_JA[i+1]}ばん。${ttsRep(title)}。`);
+    v.lines.forEach(l=>{
+      if(l.r==="R"){ out.push("オ、パッキャマラド、パッキャマラド、パオパオ、パッパッパ。"); }
+      else out.push(ttsRep(l.t).replace(/\s+/g,"、")+"。");
+    });
+    out.push("");
   });
+  return out.join("\n");
+}
+/* 1番のTTSセグメント: 表示している歌詞行と1対1で完全一致させる(タイトルや番号読みは入れない)。
+   音声生成テキストとハイライト時間配分の両方がこの配列を共有する。 */
+function verseSegments(key,vi){
+  const v=SONGS[key].verses[vi];
+  return v.lines.map(l=>
+    l.r==="R" ? "オ、パッキャマラド、パッキャマラド、パオパオ、パッパッパ。"
+              : ttsRep(l.t).replace(/\s+/g,"、")+"。"
+  );
+}
+/* 1番ぶんだけのTTS読み(音声ファイルとの1:1対応用) */
+function ttsTextVerse(key,vi){
+  return verseSegments(key,vi).join("\n");
+}
+/* セグメントの発話時間の重み(モーラ近似)。読点=短ポーズ、句点=長ポーズ、小書き・中黒は軽く。 */
+function segWeight(s){
+  let w=0;
+  for(const ch of s){
+    if(ch==="。") w+=2.0;
+    else if(ch==="、") w+=1.0;
+    else if("ゃゅょャュョぁぃぅぇぉッっ".includes(ch)) w+=0.4;
+    else if(ch==="・"||ch===" ") w+=0.3;
+    else if(ch==="ー") w+=0.8;
+    else w+=1.0;
+  }
+  return w;
+}
+/* 音声長 dur 秒に対する各行のハイライト開始時刻。セグメントと表示行は1対1。 */
+function computeHighlightSchedule(key,vi,dur){
+  const segs=verseSegments(key,vi);
+  const weights=segs.map(segWeight);
+  const total=weights.reduce((a,b)=>a+b,0);
+  const sched=[]; let acc=0;
+  segs.forEach((_,si)=>{
+    sched.push({t: acc/total*dur, lineIdx: si});
+    acc+=weights[si];
+  });
+  return sched;
+}
+function copyVerseTts(vi){
+  const text=ttsTextVerse(currentSong,vi);
+  const chip=$("audio-set-"+vi);
+  const done=()=>{ if(chip) chip.dataset.copied="1"; showVerseCopyCheck(vi); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(()=>{ fallbackCopy(text); done(); });
+  } else { fallbackCopy(text); done(); }
+}
+function showVerseCopyCheck(vi){
+  const btn=$("copy-verse-"+vi);
+  if(!btn) return;
+  const orig=btn.textContent;
+  btn.textContent="コピー済み";
+  setTimeout(()=>{ btn.textContent=orig; }, 1400);
+}
+
+function refreshTts(){
+  $("tts-text").textContent=ttsText(currentSong);
+  const b=$("btn-tts-copy");
+  b.textContent="この曲のTTS読みをコピー";
+}
+$("btn-tts-copy").addEventListener("click",()=>{
+  const text=ttsText(currentSong);
+  const done=()=>{ $("btn-tts-copy").textContent="コピーしました"; };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(()=>{ fallbackCopy(text); done(); });
+  } else { fallbackCopy(text); done(); }
+});
+function fallbackCopy(text){
+  try{
+    const ta=document.createElement("textarea");
+    ta.value=text; document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy");
+    document.body.removeChild(ta);
+  }catch(e){ /* detailsから手動選択可 */ }
+}
+function pickAudio(vi){
+  const inp=document.createElement("input");
+  inp.type="file"; inp.accept="audio/*";
+  inp.addEventListener("change",()=>{
+    const f=inp.files && inp.files[0];
+    if(!f) return;
+    if(customAudio[currentSong][vi]){ try{URL.revokeObjectURL(customAudio[currentSong][vi]);}catch(e){} }
+    customAudio[currentSong][vi]=URL.createObjectURL(f);
+    const chip=$("audio-set-"+vi);
+    if(chip){ chip.textContent="♪ "+(f.name.length>14?f.name.slice(0,13)+"…":f.name); chip.classList.add("has-audio"); }
+  });
+  inp.click();
 }
 
 /* 曲ごとのメロディとテンポ */
@@ -1163,9 +1688,27 @@ function buildSong(){
     btn.className="btn-play";
     btn.id="play-"+vi;
     btn.setAttribute("aria-pressed","false");
-    btn.innerHTML=idlePlayLabel();
+    btn.innerHTML="▶ メロディ再生";
     btn.addEventListener("click",()=>toggleVerse(vi));
     head.appendChild(btn);
+    const ab=document.createElement("button");
+    ab.className="chip btn-audio";
+    ab.id="audio-set-"+vi;
+    if(autoAudio[currentSong][vi]){
+      ab.textContent="♪ 自動検出（フォルダ）"; ab.classList.add("has-audio");
+    } else if(customAudio[currentSong][vi]){
+      ab.textContent="♪ 音声設定済み"; ab.classList.add("has-audio");
+    } else {
+      ab.textContent="♪ 音声";
+    }
+    ab.addEventListener("click",()=>pickAudio(vi));
+    head.appendChild(ab);
+    const cb=document.createElement("button");
+    cb.className="chip";
+    cb.id="copy-verse-"+vi;
+    cb.textContent="この番の読みをコピー";
+    cb.addEventListener("click",()=>copyVerseTts(vi));
+    head.appendChild(cb);
     card.appendChild(head);
 
     const ly=document.createElement("div");
@@ -1190,18 +1733,18 @@ function buildSong(){
     card.appendChild(pt);
     wrap.appendChild(card);
   });
+  refreshTts();
+  song.verses.forEach((_,vi)=>probeVerseAudio(currentSong,vi));
 }
 
 function clearSongTimers(){ songTimers.forEach(t=>clearTimeout(t)); songTimers=[]; }
 function clearHighlights(){ document.querySelectorAll(".lyric.singing").forEach(el=>el.classList.remove("singing")); }
 function stopSong(){
   clearSongTimers(); clearHighlights();
-  activeOscillators.forEach(osc=>{ try{ osc.stop(); }catch(_){ /* already stopped */ } });
-  activeOscillators.clear();
-  if(speechEngine) speechEngine.cancel();
+  if(curAudio){ try{curAudio.pause();}catch(e){} curAudio=null; }
   if(playingVerse>=0){
     const b=$("play-"+playingVerse);
-    if(b){ b.setAttribute("aria-pressed","false"); b.innerHTML=idlePlayLabel(); }
+    if(b){ b.setAttribute("aria-pressed","false"); b.innerHTML="▶ メロディ再生"; }
   }
   playingVerse=-1;
 }
@@ -1213,7 +1756,34 @@ function toggleVerse(vi){
   const btn=$("play-"+vi);
   btn.setAttribute("aria-pressed","true");
   btn.innerHTML="■ 停止";
-  playMelody(vi);
+  const url=customAudio[currentSong][vi];
+  if(url){ playCustom(vi,url); } else { playMelody(vi); }
+}
+
+/* Irodori等で生成した音声を再生。音声テキスト＝表示歌詞行(1対1)。
+   ハイライトは各行の文字量(モーラ近似)に比例配分する。 */
+function playCustom(vi,url){
+  try{
+    curAudio=new Audio(url);
+    const key=currentSong;
+    curAudio.addEventListener("loadedmetadata",()=>{
+      const nLines=SONGS[key].verses[vi].lines.length;
+      const dur=(isFinite(curAudio.duration)&&curAudio.duration>0)?curAudio.duration:nLines*2.5;
+      computeHighlightSchedule(key,vi,dur).forEach(({t,lineIdx})=>{
+        songTimers.push(setTimeout(()=>{
+          clearHighlights();
+          if(lineIdx>=0){
+            const el=$(`lyric-${vi}-${lineIdx}`);
+            if(el) el.classList.add("singing");
+          }
+        }, t*1000));
+      });
+      songTimers.push(setTimeout(stopSong, dur*1000+300));
+    });
+    curAudio.addEventListener("ended",stopSong);
+    const p=curAudio.play();
+    if(p&&p.catch) p.catch(()=>{});
+  }catch(e){ playMelody(vi); }
 }
 
 /* 汎用メロディ再生＋行ハイライト。フレーズ長は可変。 */
@@ -1223,16 +1793,12 @@ function playMelody(vi){
     if(AC) audioCtx=new AC();
   }
   if(audioCtx && audioCtx.state==="suspended") audioCtx.resume();
-  if(speechEngine) speechEngine.resume();
 
-  const song=SONGS[currentSong];
   const phrases=melodyOf(currentSong);
-  /* 読み上げ側の起動遅延を見込み、メロディを少しだけ後ろに置く。 */
-  const t0 = audioCtx ? audioCtx.currentTime+0.16 : 0;
+  const t0 = audioCtx ? audioCtx.currentTime+0.06 : 0;
   let acc=0;                       // フレーズ開始の累積秒
   phrases.forEach((phrase,pi)=>{
     const phraseStart=acc;
-    const phraseDuration=(phrase.length-1)*QTR+LASTNOTE;
     if(audioCtx){
       phrase.forEach((nm,ni)=>{
         const start = t0 + phraseStart + ni*QTR;
@@ -1240,22 +1806,14 @@ function playMelody(vi){
         playNote(NOTE[nm], start, dur*0.92);
       });
     }
-
-    const startPhrase=()=>{
+    songTimers.push(setTimeout(()=>{
       clearHighlights();
       const el=$(`lyric-${vi}-${pi}`);
       if(el) el.classList.add("singing");
-      const line=song.verses[vi]?.lines[pi];
-      if(line) speakLyric(line.t,phraseDuration);
-    };
-
-    /* 先頭行はクリックイベント内で直接開始し、モバイルでも発話を許可されやすくする。 */
-    if(pi===0) startPhrase();
-    else songTimers.push(setTimeout(startPhrase,phraseStart*1000));
-
-    acc += phraseDuration + 0.12;   // フレーズ間に少し間
+    }, phraseStart*1000));
+    acc += (phrase.length-1)*QTR + LASTNOTE + 0.12;   // フレーズ間に少し間
   });
-  songTimers.push(setTimeout(stopSong, acc*1000+250));
+  songTimers.push(setTimeout(stopSong, acc*1000+200));
 }
 
 function playNote(freq,startTime,dur){
@@ -1268,21 +1826,11 @@ function playNote(freq,startTime,dur){
   gain.gain.exponentialRampToValueAtTime(peak,startTime+0.02);
   gain.gain.exponentialRampToValueAtTime(0.0001,startTime+dur);
   osc.connect(gain).connect(audioCtx.destination);
-  activeOscillators.add(osc);
-  osc.addEventListener("ended",()=>activeOscillators.delete(osc),{once:true});
   osc.start(startTime);
   osc.stop(startTime+dur+0.02);
 }
 
-$("voice-toggle").addEventListener("click",()=>{
-  if(!speechSupported) return;
-  stopSong();
-  lyricSpeechEnabled=!lyricSpeechEnabled;
-  updateVoiceToggle();
-});
-
 buildSong();
-updateVoiceToggle();
 
 </script>
 </body>
