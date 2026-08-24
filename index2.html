@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>J.S.A. ソムリエ 二次・三次対策（2026年版）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wine:#4A1220; --bordeaux:#7B2D43; --paper:#FAF6EE; --gold:#C9A227;
+  --ink:#2B2024; --ok:#3E7C4F; --ng:#A8323E; --line:#E4DCCB;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px}
+body{font-family:"Zen Kaku Gothic New",system-ui,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;line-height:1.7}
+.serif{font-family:"Shippori Mincho",serif}
+header{background:var(--wine);color:var(--paper);padding:20px 16px 0;border-bottom:3px solid var(--gold)}
+.head-inner{max-width:900px;margin:0 auto}
+.eyebrow{font-size:.72rem;letter-spacing:.32em;color:var(--gold);text-transform:uppercase;margin-bottom:4px}
+h1{font-family:"Shippori Mincho",serif;font-weight:800;font-size:clamp(1.2rem,4vw,1.6rem);letter-spacing:.06em;line-height:1.4}
+h1 small{display:block;font-size:.74rem;font-weight:600;color:#D9C9B0;letter-spacing:.14em;margin-top:2px}
+nav{display:flex;gap:2px;margin-top:16px;flex-wrap:wrap}
+.tab{background:transparent;border:none;color:#CDB8A6;cursor:pointer;font-family:inherit;font-size:.86rem;font-weight:700;letter-spacing:.04em;padding:10px 14px;border-radius:8px 8px 0 0}
+.tab[aria-selected="true"]{background:var(--paper);color:var(--wine)}
+.tab:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+main{max-width:900px;margin:0 auto;padding:22px 16px 64px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 20px;box-shadow:0 2px 10px rgba(74,18,32,.06);margin-bottom:14px}
+.lead{font-size:.92rem;color:#5d5350;margin-bottom:14px}
+.btn{font-family:inherit;font-weight:700;font-size:1rem;cursor:pointer;border:none;border-radius:10px;padding:12px 26px;letter-spacing:.04em;background:var(--wine);color:var(--paper);transition:transform .08s,background .15s}
+.btn:hover{background:var(--bordeaux)}.btn:active{transform:scale(.98)}
+.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn.ghost{background:transparent;color:var(--wine);border:1.5px solid var(--bordeaux)}
+.btn.ghost:hover{background:#F1E8DA}
+.hidden{display:none!important}
+.disclaimer{background:#FBF6E8;border:1px dashed var(--gold);border-radius:10px;padding:10px 14px;font-size:.8rem;color:#6b5e40;margin-bottom:16px}
+.disclaimer b{color:var(--bordeaux)}
+h2.sec{font-family:"Shippori Mincho",serif;font-weight:800;color:var(--wine);font-size:1.15rem;letter-spacing:.06em;margin:6px 0 12px}
+h3.sub{font-family:"Shippori Mincho",serif;font-weight:800;color:var(--bordeaux);font-size:.98rem;margin:16px 0 8px}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:inherit;font-size:.82rem;font-weight:500;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:7px 14px;transition:all .12s}
+.chip[aria-pressed="true"]{background:var(--bordeaux);color:#fff;border-color:var(--bordeaux);font-weight:700}
+.chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.count-note{font-size:.8rem;color:#8a7f78;margin-top:8px}
+/* テイスティング */
+.tf-group{margin-bottom:14px}
+.tf-label{font-size:.78rem;font-weight:700;color:var(--bordeaux);letter-spacing:.06em;margin-bottom:6px}
+.tf-chip.correct{background:#EEF6EF;border-color:var(--ok);color:var(--ok);font-weight:700}
+.tf-chip.missed{background:#fff;border-color:var(--ok);color:var(--ok);border-style:dashed;font-weight:700}
+.tf-chip.wrong{background:#FAEDEE;border-color:var(--ng);color:var(--ng);font-weight:700;text-decoration:line-through}
+.score-box{background:#F6F0E3;border-radius:10px;padding:14px 16px;margin-top:14px}
+.score-box .big{font-family:"Shippori Mincho",serif;font-weight:800;font-size:1.6rem;color:var(--bordeaux)}
+.model{background:#EEF6EF;border-left:4px solid var(--ok);border-radius:8px;padding:12px 14px;margin-top:12px;font-size:.88rem}
+.model b{color:var(--ok)}
+.exp{font-size:.85rem;color:#5d5350;margin-top:8px}
+/* 識別カード */
+.idcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:10px}
+.idcard .front{font-family:"Shippori Mincho",serif;font-weight:800;font-size:1.05rem;color:var(--wine);margin-bottom:8px}
+.idcard table{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:6px}
+.idcard th,.idcard td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.idcard th{background:#F6F0E3;color:var(--bordeaux);white-space:nowrap;font-size:.78rem}
+.idcard td:first-child{font-weight:700;white-space:nowrap;color:var(--bordeaux)}
+details.acc{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+details.acc summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;padding:14px 18px;font-family:"Shippori Mincho",serif;font-weight:800;color:var(--wine)}
+details.acc summary::-webkit-details-marker{display:none}
+details.acc summary::after{content:"＋";margin-left:auto;color:var(--gold);font-weight:700}
+details.acc[open] summary::after{content:"－"}
+.acc-body{padding:0 18px 18px;font-size:.9rem}
+.acc-body ul{margin:6px 0 6px 1.1em}
+.acc-body li{margin-bottom:4px}
+.kw{display:inline-block;background:#FBF6E8;border:1px solid var(--gold);border-radius:6px;padding:2px 8px;font-size:.8rem;margin:2px 4px 2px 0;color:#6b5e40}
+.checklist{list-style:none;margin:8px 0}
+.checklist li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line);font-size:.9rem}
+.checklist input{margin-top:5px;flex:0 0 auto;width:16px;height:16px;accent-color:var(--bordeaux)}
+.step-num{font-family:"Shippori Mincho",serif;font-weight:800;color:var(--gold);flex:0 0 auto}
+.tl{font-size:.85rem;color:#5d5350}
+.tl b{color:var(--bordeaux)}
+footer{text-align:center;font-size:.75rem;color:#9b9088;padding:0 16px 36px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:480px){.btn{width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-inner">
+    <p class="eyebrow">J.S.A. Sommelier — 2nd & 3rd Stage</p>
+    <h1>ソムリエ 二次・三次対策<small>2026年版｜テイスティング／酒精強化／論述／サービス実技</small></h1>
+    <nav role="tablist" aria-label="表示切替">
+      <button class="tab" id="tab-taste" role="tab" aria-selected="true" aria-controls="p-taste">二次テイスティング</button>
+      <button class="tab" id="tab-fort" role="tab" aria-selected="false" aria-controls="p-fort">酒精強化・他の酒</button>
+      <button class="tab" id="tab-essay" role="tab" aria-selected="false" aria-controls="p-essay">三次 論述</button>
+      <button class="tab" id="tab-serve" role="tab" aria-selected="false" aria-controls="p-serve">三次 サービス実技</button>
+    </nav>
+  </div>
+</header>
+<main>
+  <div class="disclaimer">
+    <b>ご注意</b>：二次のコメント選択用語は年度・採点者で細部が変わります。本アプリは2026年の傾向に基づく<b>典型パターン</b>で、実際の解答用語シート（受験対策校の最新版）と突き合わせて微調整してください。<b>生産国は本番では1つだけ選びます</b>（本アプリは学習のため複数の候補を正解扱いにしています）。香り・味の体得は実物を飲むのが最優先で、本アプリは用語と判別ロジックの定着を担います。
+  </div>
+
+  <!-- ============ 二次テイスティング ============ -->
+  <section id="p-taste" role="tabpanel" aria-labelledby="tab-taste">
+    <div class="card">
+      <h2 class="sec">テイスティング・コメント選択トレーナー</h2>
+      <p class="lead">サンプルワインを選び、外観・香り・味わい・評価を選択 → 採点。<b>「主な香り」以外の項目は本番同様、各1つだけ選べます</b>（他を選ぶと切り替わる単一選択）。模範解答と選定理由が出ます。迷ったら典型用語に寄せるのがコツ。</p>
+      <div class="chip-row" id="sample-chips"></div>
+    </div>
+    <div class="card hidden" id="taste-sheet">
+      <h2 class="sec" id="ts-title"></h2>
+      <div id="ts-groups"></div>
+      <div class="chip-row" style="margin-top:6px">
+        <button class="btn" id="ts-grade">採点する</button>
+        <button class="btn ghost" id="ts-reset">選び直す</button>
+      </div>
+      <div id="ts-result"></div>
+    </div>
+    <details class="acc">
+      <summary>品種プロファイル早見（外観→香り→味わいの型）</summary>
+      <div class="acc-body" id="profile-body"></div>
+    </details>
+  </section>
+
+  <!-- ============ 酒精強化・他の酒 ============ -->
+  <section id="p-fort" role="tabpanel" aria-labelledby="tab-fort" class="hidden">
+    <div class="card">
+      <h2 class="sec">酒精強化ワイン・その他の酒類（判別）</h2>
+      <p class="lead">二次では「ワイン以外の酒類」が1種出ます。酒精強化・スピリッツ・リキュールを、色・甘辛・香り・アルコール感で見分ける訓練です。あなたの苦手分野なので、まず一覧で型を掴み、下のクイズで確認を。</p>
+    </div>
+    <div id="fort-cards"></div>
+    <div class="card">
+      <h2 class="sec">判別クイズ</h2>
+      <p class="lead" id="fq-q"></p>
+      <div class="chip-row" id="fq-choices"></div>
+      <div id="fq-fb"></div>
+      <div class="chip-row" style="margin-top:12px">
+        <button class="btn" id="fq-next">次の問題へ</button>
+        <span class="count-note" id="fq-score" style="align-self:center"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 三次 論述 ============ -->
+  <section id="p-essay" role="tabpanel" aria-labelledby="tab-essay" class="hidden">
+    <div class="card">
+      <h2 class="sec">三次 論述対策</h2>
+      <p class="lead">論述は二次と同日実施、採点は三次の合否に影響します。二次で出たワインの<b>ペアリング・サービス提案</b>が頻出。書き方の型と加点キーワードを固め、3〜4個のキーワードを軸に短時間で文章化する練習を。</p>
+      <h3 class="sub">解答の型（3部構成）</h3>
+      <div class="tl">
+        <p>① <b>結論</b>：問いに一文で答える（例「〜には〇〇をお勧めします」）</p>
+        <p>② <b>理由</b>：ワインの特徴と料理/場面の要素を対応づける（酸・タンニン・果実味・温度・産地）</p>
+        <p>③ <b>提案の具体</b>：提供温度・グラス・デカンタージュの要否など実務に落とす</p>
+      </div>
+    </div>
+    <div id="essay-body"></div>
+  </section>
+
+  <!-- ============ 三次 サービス実技 ============ -->
+  <section id="p-serve" role="tabpanel" aria-labelledby="tab-serve" class="hidden">
+    <div class="card">
+      <h2 class="sec">三次 サービス実技対策</h2>
+      <p class="lead">ワインの開栓およびデカンタージュが問われます。評価は「所作の正確さ・衛生・落ち着き・声かけ」。手順をチェックリストで反復し、時間内に淀みなく行えるようにします。</p>
+    </div>
+    <div id="serve-body"></div>
+  </section>
+</main>
+<footer>二次9/28・三次11/9（2026年）。テイスティングは実物での訓練を主軸に、本アプリで用語と型を固めてください。</footer>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+/* ===== タブ ===== */
+const TABS={taste:"p-taste",fort:"p-fort",essay:"p-essay",serve:"p-serve"};
+function switchTab(w){for(const[k,p]of Object.entries(TABS)){const s=k===w;$("tab-"+k).setAttribute("aria-selected",s);$(p).classList.toggle("hidden",!s);}}
+Object.keys(TABS).forEach(k=>$("tab-"+k).addEventListener("click",()=>switchTab(k)));
+
+/* ===== テイスティング・サンプル =====
+   各サンプル: 品種と、フィールドごとの模範解答(複数可)。選択肢は共通groupから。 */
+const GROUPS={
+  color:{label:"色調",white:["グリーンがかったイエロー","レモンイエロー","黄金がかったイエロー","黄金色/トパーズ"],red:["紫がかったルビー","ラズベリーレッド","ルビー","ガーネット","レンガ/オレンジがかった"]},
+  depth:{label:"濃淡",opts:["淡い","やや濃い","濃い"]},
+  visc:{label:"粘性（ディスク）",opts:["さらっと軽い","やや軽い","やや強い","強い"]},
+  aromaDeg:{label:"香りの程度（1つ）",opts:["控えめ","開いている"]},
+  aromaQual:{label:"香りの強さ・質（1つ）",opts:["チャーミングな","華やかな","強い","力強い"]},
+  ripe:{label:"凝縮感・成熟度（1つ）",opts:["軽快な","若々しい","成熟度が高い","濃縮感がある"]},
+  aromaW:{label:"主な香り（白）",opts:["柑橘（レモン・グレープフルーツ）","青りんご","白桃・洋梨","トロピカルフルーツ","白い花","はちみつ","ミネラル・火打石","青草・ハーブ","ヴァニラ・トースト（樽）"]},
+  aromaR:{label:"主な香り（赤）",opts:["いちご・ラズベリー","イチゴキャンディ・綿菓子様","ブラックベリー・カシス","すみれ","バラ・紅茶","ピーマン・青い植物","黒胡椒・スパイス","なめし革・獣","腐葉土・きのこ","ヴァニラ・チョコ（樽）","甘草・ドライフルーツ"]},
+  sweet:{label:"甘辛",opts:["辛口","やや辛口","やや甘口","甘口"]},
+  acid:{label:"酸味",opts:["穏やか","やや強い","豊か","シャープ"]},
+  tannin:{label:"タンニン（赤）",opts:["さらっと軽い","中程度","豊富","力強い"]},
+  alc:{label:"アルコール",opts:["控えめ","中程度","しっかり","高い"]},
+  fin:{label:"余韻",opts:["短い","やや短い","やや長い","長い"]},
+  grape:{label:"品種",opts:["ソーヴィニヨン・ブラン","シャルドネ","リースリング","甲州","ピノ・ノワール","カベルネ・ソーヴィニヨン","シラー/シラーズ","ガメイ","マスカット・ベーリーA","ネッビオーロ","サンジョヴェーゼ","メルロ"]},
+  country:{label:"生産国",opts:["フランス","イタリア","スペイン","ドイツ","アメリカ","チリ","オーストラリア","ニュージーランド","日本"]},
+  temp:{label:"適正温度",opts:["6〜8℃","8〜10℃","11〜13℃","14〜16℃","16〜18℃","18〜20℃"]},
+  glass:{label:"グラス",opts:["小","中","大"]},
+  vintage:{label:"収穫年（目安）",opts:["2023〜2024（若い）","2020〜2022","2017〜2019","2016以前（熟成）"]},
+};
+const SAMPLES=[
+ {id:"sb", name:"白① 冷涼なソーヴィニヨン・ブラン", type:"white",
+  ans:{color:["グリーンがかったイエロー","レモンイエロー"],depth:["淡い"],visc:["さらっと軽い","やや軽い"],
+    aromaDeg:["開いている"],aromaQual:["華やかな"],ripe:["軽快な","若々しい"],
+    aromaW:["柑橘（レモン・グレープフルーツ）","青草・ハーブ","白い花"],sweet:["辛口"],acid:["豊か","シャープ"],alc:["中程度"],fin:["やや長い"],
+    grape:["ソーヴィニヨン・ブラン"],country:["フランス","ニュージーランド"],temp:["8〜10℃"],glass:["中"],vintage:["2023〜2024（若い）"]},
+  exp:"淡い外観＋青草/柑橘＋シャープな酸が典型。ロワール(サンセール)かNZマールボロ。樽香が無いことが判別の決め手。香りは『開いている』＋『華やかな』を1つずつ。"},
+ {id:"ch", name:"白② 樽熟シャルドネ（新世界寄り）", type:"white",
+  ans:{color:["レモンイエロー","黄金がかったイエロー"],depth:["やや濃い"],visc:["やや強い","強い"],
+    aromaDeg:["開いている"],aromaQual:["華やかな","強い"],ripe:["成熟度が高い","濃縮感がある"],
+    aromaW:["白桃・洋梨","トロピカルフルーツ","はちみつ","ヴァニラ・トースト（樽）"],sweet:["辛口"],acid:["やや強い"],alc:["しっかり","高い"],fin:["長い"],
+    grape:["シャルドネ"],country:["アメリカ","オーストラリア"],temp:["11〜13℃"],glass:["中","大"],vintage:["2020〜2022","2023〜2024（若い）"]},
+  exp:"やや濃い色＋樽（ヴァニラ・トースト）＋高めのアルコール＋『濃縮感がある』＝新世界の樽シャルドネ。SBとの差は樽香とボリューム。"},
+ {id:"rie", name:"白③ ドイツ・リースリング（辛口〜やや辛口）", type:"white",
+  ans:{color:["グリーンがかったイエロー","レモンイエロー"],depth:["淡い"],visc:["やや軽い"],
+    aromaDeg:["開いている"],aromaQual:["華やかな"],ripe:["若々しい","軽快な"],
+    aromaW:["柑橘（レモン・グレープフルーツ）","青りんご","白い花","はちみつ","ミネラル・火打石"],sweet:["辛口","やや辛口"],acid:["豊か","シャープ"],alc:["控えめ"],fin:["やや長い"],
+    grape:["リースリング"],country:["ドイツ"],temp:["8〜10℃"],glass:["中"],vintage:["2020〜2022","2023〜2024（若い）"]},
+  exp:"低アルコール＋高い酸＋ペトロール/ミネラル。試験では辛口(トロッケン)が基本。甘味を強く感じたら『やや甘口』を足す程度に留める。アルコールが低いのに余韻が長ければリースリングを疑う。"},
+ {id:"koshu", name:"白④ 甲州（日本）", type:"white",
+  ans:{color:["グリーンがかったイエロー","レモンイエロー"],depth:["淡い"],visc:["さらっと軽い"],
+    aromaDeg:["控えめ"],aromaQual:["チャーミングな"],ripe:["軽快な","若々しい"],
+    aromaW:["柑橘（レモン・グレープフルーツ）","白い花","ミネラル・火打石"],sweet:["辛口"],acid:["やや強い"],alc:["控えめ","中程度"],fin:["やや短い","やや長い"],
+    grape:["甲州"],country:["日本"],temp:["8〜10℃"],glass:["中"],vintage:["2023〜2024（若い）"]},
+  exp:"香りが総じて控えめ・淡い・低〜中アルコール・柑橘とわずかな苦味。『特徴が薄い』のが甲州の特徴。香りの程度は『控えめ』を選ぶのが定石。"},
+ {id:"pn", name:"赤① ピノ・ノワール（冷涼）", type:"red",
+  ans:{color:["ラズベリーレッド","ルビー"],depth:["淡い","やや濃い"],visc:["やや軽い"],
+    aromaDeg:["開いている"],aromaQual:["華やかな","チャーミングな"],ripe:["若々しい","軽快な"],
+    aromaR:["いちご・ラズベリー","すみれ","バラ・紅茶","腐葉土・きのこ"],sweet:["辛口"],acid:["豊か"],tannin:["さらっと軽い","中程度"],alc:["中程度"],fin:["やや長い"],
+    grape:["ピノ・ノワール"],country:["フランス","ニュージーランド"],temp:["14〜16℃"],glass:["中","大"],vintage:["2020〜2022"]},
+  exp:"淡い色＋『華やかな』＋赤系果実/バラ＋タンニン軽め＋高い酸。色が淡いのにタンニンが弱ければピノを強く疑う。軽めの赤なので提供温度は14〜16℃とやや低め。"},
+ {id:"cs", name:"赤② カベルネ・ソーヴィニヨン（新世界）", type:"red",
+  ans:{color:["ガーネット","紫がかったルビー"],depth:["濃い"],visc:["強い"],
+    aromaDeg:["開いている"],aromaQual:["強い","力強い"],ripe:["成熟度が高い","濃縮感がある"],
+    aromaR:["ブラックベリー・カシス","ピーマン・青い植物","黒胡椒・スパイス","ヴァニラ・チョコ（樽）"],sweet:["辛口"],acid:["やや強い"],tannin:["豊富","力強い"],alc:["しっかり","高い"],fin:["長い"],
+    grape:["カベルネ・ソーヴィニヨン"],country:["アメリカ","チリ","オーストラリア"],temp:["16〜18℃"],glass:["大"],vintage:["2020〜2022","2017〜2019"]},
+  exp:"濃い色＋『濃縮感がある』＋黒系果実＋力強いタンニン＋樽。ピーマン様（メトキシピラジン）が出ればカベルネ系の目印。フルボディなので16〜18℃。"},
+ {id:"syrah", name:"赤③ シラー／シラーズ", type:"red",
+  ans:{color:["紫がかったルビー","ガーネット"],depth:["濃い"],visc:["やや強い","強い"],
+    aromaDeg:["開いている"],aromaQual:["強い","力強い"],ripe:["成熟度が高い","濃縮感がある"],
+    aromaR:["ブラックベリー・カシス","黒胡椒・スパイス","すみれ","なめし革・獣","ヴァニラ・チョコ（樽）"],sweet:["辛口"],acid:["やや強い"],tannin:["豊富"],alc:["しっかり","高い"],fin:["長い"],
+    grape:["シラー/シラーズ"],country:["フランス","オーストラリア"],temp:["16〜18℃"],glass:["大"],vintage:["2020〜2022","2017〜2019"]},
+  exp:"黒胡椒スパイスが強く出ればシラー。豪シラーズは濃縮・甘い樽、仏北ローヌは獣/スパイス寄り。フルボディで16〜18℃。"},
+ {id:"mba", name:"赤④ マスカット・ベーリーA（日本）", type:"red",
+  ans:{color:["ラズベリーレッド","ルビー"],depth:["淡い","やや濃い"],visc:["やや軽い"],
+    aromaDeg:["開いている"],aromaQual:["チャーミングな"],ripe:["軽快な","若々しい"],
+    aromaR:["いちご・ラズベリー","イチゴキャンディ・綿菓子様","バラ・紅茶"],sweet:["辛口","やや辛口"],acid:["やや強い"],tannin:["さらっと軽い"],alc:["控えめ","中程度"],fin:["やや短い"],
+    grape:["マスカット・ベーリーA"],country:["日本"],temp:["11〜13℃"],glass:["中"],vintage:["2023〜2024（若い）"]},
+  exp:"『チャーミングな』＋イチゴキャンディ/綿菓子様の甘い香り＋軽いタンニン＝MBA。ガメイと迷うが甘いキャンディ香が決め手。軽い赤なので11〜13℃と低め。日本産の指定にも注意。"},
+];
+let curSample=null;
+function renderSampleChips(){
+  const w=$("sample-chips"); w.innerHTML="";
+  SAMPLES.forEach(s=>{
+    const b=document.createElement("button");
+    b.className="chip"; b.textContent=s.name;
+    b.setAttribute("aria-pressed", curSample===s.id);
+    b.addEventListener("click",()=>startSample(s.id));
+    w.appendChild(b);
+  });
+}
+/* 本番で「1つだけ選ぶ」フィールド。主な香り(aromaW/aromaR)のみ複数選択。 */
+const SINGLE_FIELDS=new Set(["color","depth","visc","aromaDeg","aromaQual","ripe","sweet","acid","tannin","alc","fin","grape","country","vintage","temp","glass"]);
+function fieldsFor(type){
+  const common=["color","depth","visc"];
+  const aromaImp=["aromaDeg","aromaQual","ripe"];
+  const aroma= type==="white" ? ["aromaW"] : ["aromaR"];
+  const mid= type==="white" ? ["sweet","acid","alc","fin"] : ["sweet","acid","tannin","alc","fin"];
+  return [...common,...aromaImp,...aroma,...mid,"grape","country","vintage","temp","glass"];
+}
+let tsSelections={};
+function startSample(id){
+  curSample=id; renderSampleChips();
+  const s=SAMPLES.find(x=>x.id===id);
+  tsSelections={};
+  $("taste-sheet").classList.remove("hidden");
+  $("ts-title").textContent=s.name+"　の外観・香り・味わいを選ぶ";
+  $("ts-result").innerHTML="";
+  const box=$("ts-groups"); box.innerHTML="";
+  fieldsFor(s.type).forEach(f=>{
+    const g=GROUPS[f];
+    const opts = f==="color" ? (s.type==="white"?g.white:g.red) : g.opts;
+    const wrap=document.createElement("div"); wrap.className="tf-group";
+    const lab=document.createElement("div"); lab.className="tf-label"; lab.textContent=g.label;
+    wrap.appendChild(lab);
+    const row=document.createElement("div"); row.className="chip-row";
+    tsSelections[f]=new Set();
+    const single=SINGLE_FIELDS.has(f);
+    opts.forEach(o=>{
+      const c=document.createElement("button");
+      c.className="chip tf-chip"; c.textContent=o;
+      c.setAttribute("aria-pressed","false");
+      c.setAttribute("role", single?"radio":"checkbox");
+      c.addEventListener("click",()=>{
+        if(single){
+          // 単一選択: 同じ群の他を解除し、自分だけ選択（同じものを再クリックで解除）
+          const already=tsSelections[f].has(o);
+          tsSelections[f].clear();
+          row.querySelectorAll(".tf-chip").forEach(x=>x.setAttribute("aria-pressed","false"));
+          if(!already){ tsSelections[f].add(o); c.setAttribute("aria-pressed","true"); }
+        }else{
+          if(tsSelections[f].has(o)){tsSelections[f].delete(o);c.setAttribute("aria-pressed","false");}
+          else{tsSelections[f].add(o);c.setAttribute("aria-pressed","true");}
+        }
+      });
+      row.appendChild(c);
+    });
+    wrap.appendChild(row); box.appendChild(wrap);
+  });
+  try{$("taste-sheet").scrollIntoView({behavior:"smooth",block:"start"});}catch(e){}
+}
+$("ts-reset").addEventListener("click",()=>{ if(curSample) startSample(curSample); });
+$("ts-grade").addEventListener("click",gradeTaste);
+function gradeTaste(){
+  const s=SAMPLES.find(x=>x.id===curSample);
+  let hit=0,total=0,wrong=0,unanswered=0;
+  const box=$("ts-groups");
+  fieldsFor(s.type).forEach((f,fi)=>{
+    const correct=new Set(s.ans[f]||[]);
+    const chips=box.children[fi].querySelectorAll(".tf-chip");
+    const single=SINGLE_FIELDS.has(f);
+    if(single){
+      /* 単一選択: この群は1点。模範候補のどれかを選べば正解。 */
+      total+=1;
+      const picked=[...tsSelections[f]][0];
+      const ok = picked!==undefined && correct.has(picked);
+      if(ok) hit++;
+      else if(picked!==undefined) wrong++;   // 誤答を選んだ
+      else unanswered++;                      // 未選択
+      chips.forEach(c=>{
+        const t=c.textContent; const isC=correct.has(t); const isPicked=tsSelections[f].has(t);
+        c.classList.remove("correct","missed","wrong");
+        if(isPicked&&isC) c.classList.add("correct");        // 選んで正解
+        else if(isPicked&&!isC) c.classList.add("wrong");    // 選んで誤り
+        else if(!isPicked&&isC) c.classList.add("missed");   // 他の許容候補/正解の提示
+      });
+    }else{
+      /* 主な香り: 複数選択。模範各語=1点、余分な選択は減点カウント。 */
+      total+=correct.size;
+      chips.forEach(c=>{
+        const t=c.textContent; const picked=tsSelections[f].has(t); const isC=correct.has(t);
+        c.classList.remove("correct","missed","wrong");
+        if(picked&&isC){c.classList.add("correct");hit++;}
+        else if(!picked&&isC){c.classList.add("missed");}
+        else if(picked&&!isC){c.classList.add("wrong");wrong++;}
+      });
+    }
+  });
+  const pct=total?Math.round(hit/total*100):0;
+  const res=$("ts-result");
+  res.innerHTML=`<div class="score-box"><span class="big">${pct}点</span>　正解 ${hit}/${total}　誤選択 ${wrong}　未選択 ${unanswered}
+    <div class="count-note">単一選択の項目（色調・甘辛・品種・温度など）は1項目1点で、模範候補のどれかを選べば正解。主な香りのみ複数選択で1語1点です。緑＝正解、取り消し線赤＝誤り、点線緑＝他の許容候補/選び漏れ。</div></div>
+    <div class="model"><b>模範コメントの要点</b><div class="exp">${s.exp}</div></div>`;
+  try{res.scrollIntoView({behavior:"smooth",block:"nearest"});}catch(e){}
+}
+
+/* ===== 品種プロファイル早見 ===== */
+function renderProfiles(){
+  const body=$("profile-body");
+  const rows=[
+    ["白・淡い＋青草＋シャープ酸","ソーヴィニヨン・ブラン（樽なし）"],
+    ["白・やや濃い＋樽＋高アルコール","樽シャルドネ（新世界）"],
+    ["白・低アルコール＋高酸＋わずかな甘み","リースリング"],
+    ["白・全体に控えめ＋淡い","甲州"],
+    ["赤・淡い＋華やか＋タンニン軽い","ピノ・ノワール"],
+    ["赤・濃い＋濃縮感＋力強いタンニン＋ピーマン様","カベルネ・ソーヴィニヨン"],
+    ["赤・濃い＋黒胡椒スパイス","シラー／シラーズ"],
+    ["赤・淡い＋チャーミング＋イチゴ飴","マスカット・ベーリーA"],
+    ["赤・淡い〜中＋バラ＋高酸＋強タンニン","ネッビオーロ"],
+  ];
+  body.innerHTML='<ul>'+rows.map(r=>`<li><b>${r[0]}</b> → ${r[1]}</li>`).join('')+'</ul>'+
+   '<p class="exp">判別の初手は「色の濃淡」と「タンニン/酸の強弱」。色が淡いのにタンニンが弱い赤＝ピノ／MBA、色が濃く力強い＝カベルネ/シラー。白は樽香の有無とアルコール感で二分する。</p>';
+}
+
+/* ===== 酒精強化・他の酒 ===== */
+const FORT=[
+ {name:"シェリー（フィノ／マンサニーリャ）",rows:[["色","淡いレモンイエロー"],["甘辛","辛口（極辛）"],["香り","アーモンド・パン酵母・塩気（フロール由来）"],["アルコール","15〜16%と高い"],["決め手","色は白ワイン並みに淡いのに強いアルコールと酵母香＝フィノ"]]},
+ {name:"シェリー（オロロソ／甘口PX）",rows:[["色","濃い琥珀〜黒褐色"],["甘辛","辛口(オロロソ)〜極甘(PX)"],["香り","くるみ・レーズン・カラメル・酸化"],["アルコール","高い"],["決め手","濃色＋酸化的なナッツ/レーズン。PXは黒く極甘"]]},
+ {name:"ポート（ルビー／トゥニー）",rows:[["色","ルビー：濃い紫赤／トゥニー：レンガ〜琥珀"],["甘辛","甘口"],["香り","ルビー：黒系果実・カシス／トゥニー：ナッツ・ドライフルーツ"],["アルコール","19〜20%"],["決め手","赤い甘口で強いアルコール＝ポート。酸化熟成のトゥニーは褐色"]]},
+ {name:"マデイラ",rows:[["色","琥珀〜褐色"],["甘辛","辛口〜甘口"],["香り","カラメル・焦げ・ナッツ・独特の加熱香（マデリゼ）"],["アルコール","高い"],["決め手","焦げ/カラメル様の加熱香が最大の目印"]]},
+ {name:"ヴェルモット等リキュール／薬草系",rows:[["色","黄褐色〜赤"],["甘辛","甘口が多い"],["香り","薬草・ハーブ・スパイス・柑橘皮"],["アルコール","中〜高"],["決め手","ハーブ/薬草の複雑な香り＝混成酒（リキュール）"]]},
+ {name:"スピリッツ（ブランデー／ウイスキー等）",rows:[["色","無色〜琥珀"],["甘辛","基本辛口（甘味なし）"],["香り","樽・ヴァニラ・アルコールの揮発感が強い"],["アルコール","40%前後と非常に高い"],["決め手","糖のない強い揮発感＝蒸留酒。樽由来の色と香り"]]},
+];
+function renderFort(){
+  const w=$("fort-cards"); w.innerHTML="";
+  FORT.forEach(f=>{
+    const c=document.createElement("div"); c.className="idcard";
+    c.innerHTML=`<div class="front">${f.name}</div><table>${f.rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</table>`;
+    w.appendChild(c);
+  });
+}
+const FQ=[
+ {q:"淡いレモン色なのにアルコールが強く、アーモンドとパン酵母の香り。辛口。",a:"シェリー（フィノ）",x:["ポート","マデイラ","ブランデー"]},
+ {q:"濃い紫赤で甘口、カシスなど黒系果実、アルコール20%前後。",a:"ポート（ルビー）",x:["シェリー（フィノ）","ヴェルモット","ウイスキー"]},
+ {q:"琥珀〜褐色で、カラメルと焦げのような独特の加熱香。",a:"マデイラ",x:["シェリー（フィノ）","ポート（ルビー）","ブランデー"]},
+ {q:"黒褐色で極甘、レーズンとカラメルが濃厚。",a:"シェリー（PX）",x:["トゥニー・ポート","マデイラ辛口","ジン"]},
+ {q:"糖の甘みが無く強い揮発感、樽のヴァニラ、アルコール40%前後。",a:"スピリッツ（ブランデー等）",x:["甘口シェリー","ルビー・ポート","マデイラ甘口"]},
+ {q:"薬草・ハーブ・柑橘皮が複雑に香り、やや甘い混成酒。",a:"ヴェルモット等リキュール",x:["フィノ・シェリー","トゥニー・ポート","ウイスキー"]},
+];
+let fqIdx=0,fqScore=0,fqAnswered=false;
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function renderFQ(){
+  fqAnswered=false;
+  const q=FQ[fqIdx];
+  $("fq-q").textContent="Q. "+q.q;
+  $("fq-fb").innerHTML="";
+  const w=$("fq-choices"); w.innerHTML="";
+  shuffle([q.a,...q.x]).forEach(opt=>{
+    const b=document.createElement("button"); b.className="chip"; b.textContent=opt;
+    b.addEventListener("click",()=>{
+      if(fqAnswered)return; fqAnswered=true;
+      const ok=opt===q.a; if(ok)fqScore++;
+      w.querySelectorAll(".chip").forEach(c=>{
+        if(c.textContent===q.a)c.style.cssText="background:#EEF6EF;border-color:#3E7C4F;color:#3E7C4F;font-weight:700";
+        else if(c===b)c.style.cssText="background:#FAEDEE;border-color:#A8323E;color:#A8323E;text-decoration:line-through";
+      });
+      $("fq-fb").innerHTML=`<div class="model" style="background:${ok?'#EEF6EF':'#FAEDEE'};border-color:${ok?'#3E7C4F':'#A8323E'}"><b>${ok?'正解':'不正解'}</b>　正解：${q.a}</div>`;
+      $("fq-score").textContent=`${fqScore} / ${fqIdx+1} 正解`;
+    });
+    w.appendChild(b);
+  });
+  $("fq-score").textContent=`${fqScore} / ${fqIdx} 正解`;
+}
+$("fq-next").addEventListener("click",()=>{ fqIdx=(fqIdx+1)%FQ.length; if(fqIdx===0){fqScore=0;} renderFQ(); });
+
+/* ===== 論述 ===== */
+const ESSAY=[
+ {theme:"フルボディ赤（カベルネ系）に合わせる料理を提案",kw:["牛肉の赤ワイン煮/ステーキ","タンニンと脂/たんぱく質","濃い味付け・ソースの一体感","16〜18℃・大ぶりグラス"],
+  skel:"結論：しっかりした肉料理（例：牛フィレのステーキ、赤ワインソース）を提案。理由：豊富なタンニンが赤身肉のたんぱく質・脂と結びつき渋みが和らぐ／濃縮した果実味が濃い味付けと拮抗。提案：16〜18℃、大ぶりグラス、若ければ軽くデカンタージュで開かせる。"},
+ {theme:"軽やかな辛口白（SB）に合わせる料理を提案",kw:["白身魚のマリネ/山羊チーズ","高い酸とのリフレッシュ","ハーブ・柑橘の風味を橋渡し","8〜10℃"],
+  skel:"結論：白身魚のカルパッチョやシェーヴル（山羊乳チーズ）を提案。理由：シャープな酸が魚の脂や乳脂肪を洗い流す／青草・柑橘の香りがハーブや酸味と共鳴。提案：8〜10℃で冷やし、香りを開かせる中庸なグラス。"},
+ {theme:"開いていない若い高級赤へのサービス提案",kw:["デカンタージュで開かせる","空気接触で香り開く","タンニンの角を取る","提供温度を確認"],
+  skel:"結論：デカンタージュを提案。理由：若く閉じたワインは空気接触で果実香が開き、タンニンの角も和らぐ。提案：澱が無ければ開香目的で早めに移す／温度が低ければ適温まで戻す。"},
+ {theme:"酒精強化（甘口）を食後にどう供するか",kw:["食後酒として少量","ブルーチーズ/ナッツ/チョコ","甘味と塩味/苦味の対比","小ぶりのグラス・冷やしすぎない"],
+  skel:"結論：食後酒として少量を提案。理由：甘口の凝縮感はブルーチーズの塩味やナッツ・チョコの苦味と好対照。提案：小ぶりのグラスで、PXなど濃厚甘口は少量、フィノなら軽く冷やして食前にも。"},
+];
+function renderEssay(){
+  const w=$("essay-body"); w.innerHTML="";
+  ESSAY.forEach(e=>{
+    const d=document.createElement("details"); d.className="acc";
+    d.innerHTML=`<summary>${e.theme}</summary><div class="acc-body">
+      <div>加点キーワード：${e.kw.map(k=>`<span class="kw">${k}</span>`).join("")}</div>
+      <div class="model" style="margin-top:10px"><b>解答骨子（例）</b><div class="exp">${e.skel}</div></div>
+      <p class="exp" style="margin-top:8px">※ まず自分でキーワードを3〜4個書き出し→型（結論→理由→提案）で30〜60秒で口述してから骨子と照合。</p></div>`;
+    w.appendChild(d);
+  });
+}
+
+/* ===== サービス実技 ===== */
+const SERVE=[
+ {title:"抜栓（スティルワイン）の基本手順",steps:[
+   "ゲストにボトルを提示（銘柄・ヴィンテージを確認いただく）",
+   "キャップシールをソムリエナイフで上端の下から一周切る（衛生的に）",
+   "コルク上面を清潔なナプキンで拭く",
+   "スクリューを中心に垂直に差し込み、テコで静かに引き上げる",
+   "コルクを手で最後まで抜き、匂いを確認（ブショネ点検）",
+   "瓶口を内外とも拭く",
+   "ホストテイスティングを供する"]},
+ {title:"デカンタージュ（澱のある熟成赤）",steps:[
+   "パニエ等でボトルを寝かせたまま運び、澱を舞い上げない",
+   "デカンタとキャンドル/ライトを用意",
+   "抜栓後、瓶口を拭く",
+   "光源に瓶肩をかざしながら、澱が瓶口に来る手前までゆっくり注ぐ",
+   "澱が瓶口に達したら注ぎを止める",
+   "デカンタからゲストへサーブ"]},
+ {title:"デカンタージュ（若い閉じた赤：開香目的）",steps:[
+   "澱の心配は少ないため、空気接触を積極的に",
+   "やや高い位置から注ぎ、酸素に触れさせる",
+   "香りの開き具合を確認",
+   "適温に留意してサーブ"]},
+];
+const SERVE_EVAL=["所作が正確で衛生的（コルクや瓶口に触れすぎない）","動作に淀みがなく落ち着いている","ゲストへの提示・声かけがある","液体をこぼさない・音を立てない","澱を混ぜない（デカンタージュ）"];
+function renderServe(){
+  const w=$("serve-body"); w.innerHTML="";
+  SERVE.forEach(s=>{
+    const c=document.createElement("div"); c.className="card";
+    c.innerHTML=`<h3 class="sub" style="margin-top:0">${s.title}</h3><ul class="checklist">`+
+      s.steps.map((st,i)=>`<li><input type="checkbox" aria-label="手順${i+1}"><span class="step-num">${i+1}</span><span>${st}</span></li>`).join("")+`</ul>`;
+    w.appendChild(c);
+  });
+  const ev=document.createElement("div"); ev.className="card";
+  ev.innerHTML=`<h3 class="sub" style="margin-top:0">評価されるポイント</h3><ul class="checklist">`+
+    SERVE_EVAL.map(e=>`<li><input type="checkbox"><span>${e}</span></li>`).join("")+`</ul>
+    <p class="tl" style="margin-top:8px"><b>時間配分の目安</b>：提示→抜栓→（デカンタージュ）→サーブを落ち着いて。焦って澱を混ぜる・こぼすのが最大の失点。所作を体で覚えるまで反復を。</p>`;
+  w.appendChild(ev);
+}
+
+/* 初期描画 */
+renderSampleChips(); renderProfiles(); renderFort(); renderFQ(); renderEssay(); renderServe();
+</script>
+</body>
+</html>

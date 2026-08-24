@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ソムリエ 二次・三次対策 暗記シート（2026年版）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--wine:#4A1220;--bordeaux:#7B2D43;--paper:#FAF6EE;--gold:#C9A227;--ink:#2B2024;--ok:#3E7C4F;--ng:#A8323E;--line:#E4DCCB;--cream:#FBF6E8;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Zen Kaku Gothic New",system-ui,sans-serif;color:var(--ink);background:#e9e4d8;line-height:1.35;font-size:9.2px}
+.serif{font-family:"Shippori Mincho",serif}
+.sheet{width:1123px;min-height:794px;margin:12px auto;background:var(--paper);padding:14px 16px;box-shadow:0 3px 14px rgba(0,0,0,.2)}
+/* ヘッダー */
+.top{display:flex;align-items:center;gap:14px;background:var(--wine);color:var(--paper);border-radius:8px;padding:10px 16px;border-bottom:3px solid var(--gold);margin-bottom:8px}
+.top h1{font-family:"Shippori Mincho",serif;font-weight:800;font-size:21px;letter-spacing:.04em;line-height:1.2}
+.top .sub{font-size:9px;color:#E7D6BC;margin-top:2px;letter-spacing:.06em}
+.top .dates{margin-left:auto;background:var(--cream);color:var(--wine);border-radius:6px;padding:5px 12px;font-weight:700;font-size:10px;text-align:center;white-space:nowrap}
+.top .grape{font-size:26px}
+/* 注意＋凡例 */
+.noterow{display:flex;gap:8px;margin-bottom:8px}
+.notice{flex:1;background:var(--cream);border:1px dashed var(--gold);border-radius:7px;padding:7px 11px;font-size:8.4px;color:#6b5e40}
+.notice b{color:var(--bordeaux)}
+.legend{flex:0 0 232px;background:#fff;border:1px solid var(--line);border-radius:7px;padding:7px 10px;font-size:8.2px}
+.legend b{color:var(--bordeaux)}
+.legend span{display:inline-block;margin-right:8px;white-space:nowrap}
+.sym{display:inline-block;width:13px;text-align:center;font-weight:800;color:var(--bordeaux)}
+/* グリッド */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.box{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px;break-inside:avoid}
+.h{font-family:"Shippori Mincho",serif;font-weight:800;color:#fff;background:var(--bordeaux);border-radius:5px;padding:3px 9px;font-size:10.5px;letter-spacing:.04em;margin:-8px -10px 7px;display:flex;align-items:center;gap:6px}
+.h .n{background:var(--gold);color:var(--wine);border-radius:50%;width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex:0 0 auto}
+table{width:100%;border-collapse:collapse;font-size:8.4px}
+th,td{border:1px solid var(--line);padding:3px 5px;text-align:left;vertical-align:top}
+th{background:#F1E8DA;color:var(--bordeaux);font-size:8px;white-space:nowrap}
+td.cat{writing-mode:vertical-rl;text-align:center;font-weight:800;font-size:11px;background:var(--cream);color:var(--bordeaux);width:16px}
+td.cat-r{color:var(--wine)}
+td.pname,td.fname{font-weight:700;color:var(--bordeaux);white-space:nowrap}
+td.dec{color:var(--wine);font-weight:500}
+/* 味わい用語まとめ */
+.flow{display:flex;flex-direction:column;gap:3px}
+.fstep{display:flex;gap:6px;align-items:baseline;font-size:8.6px}
+.fstep .num{font-family:"Shippori Mincho",serif;font-weight:800;color:#fff;background:var(--gold);border-radius:4px;width:15px;height:15px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex:0 0 auto}
+.fstep b{color:var(--bordeaux)}
+.tip{background:var(--cream);border-radius:5px;padding:5px 8px;font-size:8.2px;margin-top:5px}
+.tip b{color:var(--bordeaux)}
+.terms td:first-child{font-weight:700;color:var(--bordeaux);white-space:nowrap;width:74px}
+.terms td:nth-child(2){color:#5d5350;width:150px}
+.chipline span{display:inline-block;background:var(--cream);border:1px solid var(--line);border-radius:4px;padding:1px 5px;margin:1px 2px;font-size:8px}
+.chipline .must{border-color:var(--gold);background:#fff;font-weight:700;color:#6b5e40}
+/* 論述 */
+.type3{display:flex;flex-direction:column;gap:3px;font-size:8.6px}
+.type3 .num{font-weight:800;color:var(--gold)}
+.type3 b{color:var(--bordeaux)}
+.ecard{border-bottom:1px dashed var(--line);padding:4px 0}
+.etheme{font-weight:700;color:var(--wine);font-size:8.6px;margin-bottom:2px}
+.kw{display:inline-block;background:var(--cream);border:1px solid var(--gold);border-radius:4px;padding:1px 5px;margin:1px 2px;font-size:7.8px;color:#6b5e40}
+/* サービス */
+.serve-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.scol .stitle{font-weight:700;color:var(--bordeaux);font-size:8.8px;margin-bottom:3px}
+.scol ol{margin-left:15px;font-size:8.2px}
+.scol li{margin-bottom:1px}
+.evalbox{margin-top:6px;background:#EEF6EF;border-radius:6px;padding:5px 8px}
+.evalbox .stitle{color:var(--ok);font-weight:700;font-size:8.6px;margin-bottom:2px}
+.evalbox ul{margin-left:15px;font-size:8.2px}
+/* 超速まとめ */
+.fast{display:grid;grid-template-columns:1.1fr 1fr 1fr 1.1fr;gap:8px}
+.fast .ft{font-weight:700;color:var(--bordeaux);font-size:8.6px;margin-bottom:3px}
+.fast ul{list-style:none;font-size:8.2px}
+.fast li{padding:1px 0;display:flex;gap:5px}
+.fast li b{color:var(--wine);white-space:nowrap}
+.temp b{color:var(--bordeaux)}
+.foot{text-align:center;margin-top:8px;color:var(--wine);font-weight:700;font-size:10px;font-family:"Shippori Mincho",serif}
+.foot .g{color:var(--gold)}
+/* 印刷 */
+.printbar{position:fixed;top:10px;left:10px;z-index:10}
+.printbar button{font-family:inherit;font-weight:700;background:var(--wine);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+@page{size:A4 landscape;margin:6mm}
+@media print{
+  body{background:#fff;font-size:8.5px}
+  .sheet{width:auto;min-height:auto;margin:0;padding:0;box-shadow:none}
+  .printbar{display:none}
+  .box{box-shadow:none}
+}
+</style>
+</head>
+<body>
+<div class="printbar"><button onclick="window.print()">🖨 印刷 / PDF保存</button></div>
+<div class="sheet">
+  <div class="top">
+    <span class="grape">🍇</span>
+    <div>
+      <h1>J.S.A. ソムリエ　二次・三次対策　暗記シート <span style="font-size:12px">（2026年版）</span></h1>
+      <div class="sub">要点だけを1枚にまとめた“典型パターンのまとめ”。実物のワインで体感しながら、知識を固める補助に。</div>
+    </div>
+    <div class="dates">二次試験 9/28（日）<br>三次試験 11/9（日）</div>
+  </div>
+
+  <div class="noterow">
+    <div class="notice"><b>重要注意</b>：本シートは2026年の傾向に基づく<b>典型パターンのまとめ</b>です。年度・採点者によって選択肢や評価基準が変わるため、必ず最新の解答用紙・要項（受験対策校の最新版）で確認し、暗記の補助としてご活用ください。香り・味の体得は実物を飲むのが最優先です。</div>
+    <div class="legend"><b>凡例</b><br>
+      <span><i class="sym">◎</i>強く当てはまる</span><span><i class="sym">○</i>当てはまる</span><br>
+      <span><i class="sym">△</i>場合により</span><span><i class="sym">×</i>当てはまりにくい</span></div>
+  </div>
+
+  <div class="cols">
+    <!-- 左列 -->
+    <div>
+      <div class="box">
+        <div class="h"><span class="n">1</span>テイスティング：見る順番と判断の流れ</div>
+        <div class="flow">
+          <div class="fstep"><span class="num">1</span><div><b>外観</b>（色調・濃淡・粘性）→ 若さ・熟成の手掛かり</div></div>
+          <div class="fstep"><span class="num">2</span><div><b>香り</b>（程度・強さ質・主な香り）→ 品種・産地・熟度の推定</div></div>
+          <div class="fstep"><span class="num">3</span><div><b>味わい</b>（甘辛・酸・タンニン・アルコール・余韻）→ スタイル/バランス確認</div></div>
+          <div class="fstep"><span class="num">4</span><div><b>総合</b>（品種・生産国・適温・グラス・収穫年）→ 最も確からしい結論へ</div></div>
+        </div>
+        <div class="tip"><b>選択のコツ</b>：「主な香り」以外は各<b>1つだけ</b>選ぶ（本番同様）。迷ったら典型に寄せる。判別の初手は<b>色の濃淡</b>と<b>酸・タンニン・アルコールの強弱</b> → 果実の種類・熟度で絞る。<br>例）淡い色＋高い酸＋タンニン軽い → ピノ or MBA　／　濃い色＋豊富なタンニン＋ピーマン様 → カベルネ有力</div>
+      </div>
+
+      <div class="box">
+        <div class="h">コメント選択用語の要点（本番では1つ選択）</div>
+        <table class="terms">
+          <tr><td>色調(白)</td><td>緑がかった→レモン→黄金→熟成</td><td class="chipline"><span class="must">グリーンがかった</span><span>レモンイエロー</span><span>黄金がかった</span><span>黄金/トパーズ</span></td></tr>
+          <tr><td>色調(赤)</td><td>紫がかった→ルビー→ガーネット→レンガ</td><td class="chipline"><span>紫がかったルビー</span><span class="must">ルビー</span><span>ガーネット</span><span>ラズベリーレッド</span><span>レンガ/オレンジ</span></td></tr>
+          <tr><td>香りの程度</td><td>香りの量（1つ）</td><td class="chipline"><span>控えめ</span><span class="must">開いている</span></td></tr>
+          <tr><td>強さ・質</td><td>印象の質（1つ）</td><td class="chipline"><span>チャーミングな</span><span>華やかな</span><span>強い</span><span>力強い</span></td></tr>
+          <tr><td>凝縮・熟度</td><td>成熟の度合い（1つ）</td><td class="chipline"><span>軽快な</span><span>若々しい</span><span>成熟度が高い</span><span class="must">濃縮感がある</span></td></tr>
+          <tr><td>甘辛</td><td>残糖（1つ）</td><td class="chipline"><span class="must">辛口</span><span>やや辛口</span><span>やや甘口</span><span>甘口</span></td></tr>
+          <tr><td>酸味</td><td>キレ（1つ）</td><td class="chipline"><span>穏やか</span><span>やや強い</span><span>豊か</span><span>シャープ</span></td></tr>
+          <tr><td>タンニン(赤)</td><td>渋みの強さ（1つ）</td><td class="chipline"><span>さらっと軽い</span><span>中程度</span><span>豊富</span><span>力強い</span></td></tr>
+          <tr><td>アルコール</td><td>ボリューム（1つ）</td><td class="chipline"><span>控えめ</span><span>中程度</span><span>しっかり</span><span>高い</span></td></tr>
+          <tr><td>余韻</td><td>長さ（1つ）</td><td class="chipline"><span>短い</span><span>やや短い</span><span>やや長い</span><span>長い</span></td></tr>
+        </table>
+        <div class="tip"><b>採点の考え方</b>：各項目1点（「主な香り」は1語1点）。単一項目は模範候補のどれかで正解。<b>絶対に外せないのは「品種」「生産国」「適温」</b>。生産国は本番1つだけ。</div>
+      </div>
+
+      <div class="box">
+        <div class="h"><span class="n">3</span>酒精強化ワイン・その他の酒類（判別の要点）</div>
+        <table>
+          <tr><th>種類</th><th>色</th><th>甘辛</th><th>主な香り・特徴</th><th>見分けの決め手</th></tr>
+          <tr><td class="fname">シェリー（フィノ／マンサニーリャ）</td><td>淡いレモンイエロー</td><td>辛口（極辛）</td><td>アーモンド・パン酵母・塩気（フロール由来）</td><td class="dec">色は白ワイン並みに淡いのに強いアルコールと酵母香＝フィノ</td></tr>
+<tr><td class="fname">シェリー（オロロソ／甘口PX）</td><td>濃い琥珀〜黒褐色</td><td>辛口(オロロソ)〜極甘(PX)</td><td>くるみ・レーズン・カラメル・酸化</td><td class="dec">濃色＋酸化的なナッツ/レーズン。PXは黒く極甘</td></tr>
+<tr><td class="fname">ポート（ルビー／トゥニー）</td><td>ルビー：濃い紫赤／トゥニー：レンガ〜琥珀</td><td>甘口</td><td>ルビー：黒系果実・カシス／トゥニー：ナッツ・ドライフルーツ</td><td class="dec">赤い甘口で強いアルコール＝ポート。酸化熟成のトゥニーは褐色</td></tr>
+<tr><td class="fname">マデイラ</td><td>琥珀〜褐色</td><td>辛口〜甘口</td><td>カラメル・焦げ・ナッツ・独特の加熱香（マデリゼ）</td><td class="dec">焦げ/カラメル様の加熱香が最大の目印</td></tr>
+<tr><td class="fname">ヴェルモット等リキュール／薬草系</td><td>黄褐色〜赤</td><td>甘口が多い</td><td>薬草・ハーブ・スパイス・柑橘皮</td><td class="dec">ハーブ/薬草の複雑な香り＝混成酒（リキュール）</td></tr>
+<tr><td class="fname">スピリッツ（ブランデー／ウイスキー等）</td><td>無色〜琥珀</td><td>基本辛口（甘味なし）</td><td>樽・ヴァニラ・アルコールの揮発感が強い</td><td class="dec">糖のない強い揮発感＝蒸留酒。樽由来の色と香り</td></tr>
+
+        </table>
+        <div class="tip"><b>覚え方の軸</b>：<b>色 × 甘辛 × 香り(特徴) × アルコール</b> をセットで判別すると早い。淡い色＋高Alc＋酵母香＝フィノ／濃色＋甘口＋高Alc＝ポートやPX／焦げ・カラメル＝マデイラ／糖なし強い揮発＝蒸留酒。</div>
+      </div>
+    </div>
+
+    <!-- 右列 -->
+    <div>
+      <div class="box">
+        <div class="h"><span class="n">2</span>主要品種のプロファイル（典型的な傾向）</div>
+        <table>
+          <tr><th>白/赤</th><th>品種</th><th>典型的な外観</th><th>主な香りのキーワード</th><th>味わいの傾向</th><th>見分けの決め手</th></tr>
+          <tr><td class="cat cat-w" rowspan="4">白</td><td class="pname">ソーヴィニヨン・ブラン</td><td>グリーンがかったイエロー／淡い</td><td>柑橘（レモン・グレープフルーツ）・青草・ハーブ・白い花</td><td>酸豊か／Alc中程度</td><td class="dec">青草・ハーブ／シャープな酸</td></tr>
+<tr><td class="pname">シャルドネ（新世界）</td><td>レモンイエロー／やや濃い</td><td>白桃・洋梨・トロピカルフルーツ・はちみつ</td><td>酸やや強い／Alcしっかり</td><td class="dec">樽香とボリューム／高Alc</td></tr>
+<tr><td class="pname">リースリング（ドイツ）</td><td>グリーンがかったイエロー／淡い</td><td>柑橘（レモン・グレープフルーツ）・青りんご・白い花</td><td>酸豊か／Alc控えめ</td><td class="dec">低Alcなのに高い酸・ミネラル</td></tr>
+<tr><td class="pname">甲州（日本）</td><td>グリーンがかったイエロー／淡い</td><td>柑橘（レモン・グレープフルーツ）・白い花・ミネラル・火打石</td><td>酸やや強い／Alc控えめ</td><td class="dec">全体に控えめ・淡い</td></tr>
+<tr><td class="cat cat-r" rowspan="5">赤</td><td class="pname">ピノ・ノワール</td><td>ラズベリーレッド／淡い</td><td>いちご・ラズベリー・すみれ・バラ・紅茶</td><td>酸豊か／タンニンさらっと軽い／Alc中程度</td><td class="dec">淡い色＋華やか＋タンニン軽い</td></tr>
+<tr><td class="pname">カベルネ・ソーヴィニヨン</td><td>ガーネット／濃い</td><td>ブラックベリー・カシス・ピーマン・青い植物・黒胡椒・スパイス</td><td>酸やや強い／タンニン豊富／Alcしっかり</td><td class="dec">ピーマン様＋力強いタンニン</td></tr>
+<tr><td class="pname">シラー／シラーズ</td><td>紫がかったルビー／濃い</td><td>ブラックベリー・カシス・黒胡椒・スパイス・すみれ</td><td>酸やや強い／タンニン豊富／Alcしっかり</td><td class="dec">黒胡椒スパイス</td></tr>
+<tr><td class="pname">マスカット・ベーリーA（日本）</td><td>ラズベリーレッド／淡い</td><td>いちご・ラズベリー・イチゴキャンディ・綿菓子様・バラ・紅茶</td><td>酸やや強い／タンニンさらっと軽い／Alc控えめ</td><td class="dec">イチゴキャンディの甘い香り</td></tr>
+<tr><td class="pname">ネッビオーロ（イタリア）</td><td>やや濃い／ガーネット</td><td>バラ・タール／ドライハーブ・きのこ</td><td>高い酸／強いタンニン</td><td class="dec">バラ＋高い酸・強タンニン</td></tr>
+
+        </table>
+        <div class="tip"><b>判別フロー</b>：外観の濃淡を決める → 酸・タンニン・アルコールの強弱 → 特徴香・樽・熟度で品種を絞る。<br>淡い色＋高い酸＋タンニン軽い → <b>ピノ・ノワール or MBA</b>／濃い色＋豊富なタンニン＋ピーマン様 → <b>カベルネ・ソーヴィニヨン</b>有力。</div>
+      </div>
+
+      <div class="box">
+        <div class="h"><span class="n">4</span>三次 論述：書き方の型（3部構成）</div>
+        <div class="type3">
+          <div><span class="num">①</span> <b>結論</b>：問いに一文で答える（例「〜には〇〇をお勧めします」）</div>
+          <div><span class="num">②</span> <b>理由</b>：ワインの特徴 × 料理/場面（酸・タンニン・果実味・温度・産地）</div>
+          <div><span class="num">③</span> <b>提案の具体</b>：提供温度・グラス・デカンタージュの要否など実務に落とす</div>
+        </div>
+        <div style="margin-top:6px"><div class="ecard"><div class="etheme">フルボディ赤（カベルネ系）に合わせる料理を提案</div><div><span class="kw">牛肉の赤ワイン煮/ステーキ</span> <span class="kw">タンニンと脂/たんぱく質</span> <span class="kw">濃い味付け・ソースの一体感</span> <span class="kw">16〜18℃・大ぶりグラス</span></div></div>
+<div class="ecard"><div class="etheme">軽やかな辛口白（SB）に合わせる料理を提案</div><div><span class="kw">白身魚のマリネ/山羊チーズ</span> <span class="kw">高い酸とのリフレッシュ</span> <span class="kw">ハーブ・柑橘の風味を橋渡し</span> <span class="kw">8〜10℃</span></div></div>
+<div class="ecard"><div class="etheme">開いていない若い高級赤へのサービス提案</div><div><span class="kw">デカンタージュで開かせる</span> <span class="kw">空気接触で香り開く</span> <span class="kw">タンニンの角を取る</span> <span class="kw">提供温度を確認</span></div></div>
+<div class="ecard"><div class="etheme">酒精強化（甘口）を食後にどう供するか</div><div><span class="kw">食後酒として少量</span> <span class="kw">ブルーチーズ/ナッツ/チョコ</span> <span class="kw">甘味と塩味/苦味の対比</span> <span class="kw">小ぶりのグラス・冷やしすぎない</span></div></div>
+</div>
+        <div class="tip">頻出：二次で出たワインの<b>ペアリング提案／サービス提案</b>、場面設定に応じた選定、酒精強化の供し方、ヴィンテージ・熟成の評価。まずKWを3〜4個書き出し、型に沿って口述→骨子と照合。</div>
+      </div>
+
+      <div class="box">
+        <div class="h"><span class="n">5</span>三次 サービス実技：手順チェック（要点）</div>
+        <div class="serve-grid"><div class="scol"><div class="stitle">抜栓（スティルワイン）の基本手順</div><ol><li>ゲストにボトルを提示（銘柄・ヴィンテージを確認いただく）</li><li>キャップシールをソムリエナイフで上端の下から一周切る（衛生的に）</li><li>コルク上面を清潔なナプキンで拭く</li><li>スクリューを中心に垂直に差し込み、テコで静かに引き上げる</li><li>コルクを手で最後まで抜き、匂いを確認（ブショネ点検）</li><li>瓶口を内外とも拭く</li><li>ホストテイスティングを供する</li></ol></div>
+<div class="scol"><div class="stitle">デカンタージュ（澱のある熟成赤）</div><ol><li>パニエ等でボトルを寝かせたまま運び、澱を舞い上げない</li><li>デカンタとキャンドル/ライトを用意</li><li>抜栓後、瓶口を拭く</li><li>光源に瓶肩をかざしながら、澱が瓶口に来る手前までゆっくり注ぐ</li><li>澱が瓶口に達したら注ぎを止める</li><li>デカンタからゲストへサーブ</li></ol></div>
+</div>
+        <div class="evalbox"><div class="stitle">✔ 評価されるポイント（減点されやすい点）</div>
+          <ul><li>所作が正確で衛生的（コルクや瓶口に触れすぎない）</li><li>動作に淀みがなく落ち着いている</li><li>ゲストへの提示・声かけがある</li><li>液体をこぼさない・音を立てない</li><li>澱を混ぜない（デカンタージュ）</li></ul>
+          <div style="font-size:8px;margin-top:3px;color:#5d5350">最大の失点は<b style="color:#A8323E">澱を混ぜる・こぼす・音を立てる・時間オーバー</b>。所作を体で覚えるまで反復。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 全幅: 超速まとめ -->
+  <div class="box" style="margin-top:0">
+    <div class="h"><span class="n">6</span>超速まとめ：試験直前に見る1分チャート</div>
+    <div class="fast">
+      <div>
+        <div class="ft">色の経年変化</div>
+        <ul>
+          <li><b>白：</b>グリーン→レモン→黄金→琥珀（熟成で濃くなる）</li>
+          <li><b>赤：</b>紫→ルビー→ガーネット→レンガ（熟成で退色）</li>
+        </ul>
+      </div>
+      <div class="temp">
+        <div class="ft">温度の目安（提供温度）</div>
+        <ul>
+          <li><b>白(辛口)</b>　8〜10℃</li>
+          <li><b>白(コクあり)</b>　11〜13℃</li>
+          <li><b>赤(軽め:ピノ/MBA)</b>　14〜16℃</li>
+          <li><b>赤(フルボディ)</b>　16〜18℃</li>
+          <li><b>酒精強化(甘口)</b>　少量・冷やしすぎない</li>
+        </ul>
+      </div>
+      <div>
+        <div class="ft">グラスの目安</div>
+        <ul>
+          <li><b>白(軽め)</b>　小〜中ぶり</li>
+          <li><b>白(コクあり)</b>　中〜大ぶり</li>
+          <li><b>赤(軽め)</b>　中ぶり</li>
+          <li><b>赤(フルボディ)</b>　大ぶり</li>
+          <li><b>酒精強化</b>　小ぶり</li>
+        </ul>
+      </div>
+      <div>
+        <div class="ft">成功のコツ</div>
+        <ul>
+          <li>① 典型表現をたくさん知っておく</li>
+          <li>② 外観→香り→味わいの順で判断</li>
+          <li>③ 迷ったら“やや強め”に寄せる</li>
+          <li>④ 酸・タンニン・アルコールの強弱がカギ</li>
+          <li>⑤ 選択は1つだけ（本番ルール徹底）</li>
+          <li>⑥ サービスは落ち着き＋衛生が最優先</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">★ 継続は力なり！　毎日5分の復習で差がつく　―　実物のワインで体感し、このシートで知識を固めよう！　<span class="g">Good luck!</span></div>
+</div>
+</body>
+</html>
