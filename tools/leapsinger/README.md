@@ -27,6 +27,13 @@
       --ckpt ~/src/LeapSinger/3speaker_gan2d.pth \
       --song twinkle --speaker 2 --out audio/twinkle
 
+二次対策の替え歌（`index2.html` の「暗記ソング」タブ）を合成する場合:
+
+    python3 tools/leapsinger/render_verses.py --index index2.html --check
+    python3 tools/leapsinger/render_verses.py --index index2.html \
+      --leapsinger ~/src/LeapSinger --ckpt ~/src/LeapSinger/3speaker_gan2d.pth \
+      --song taste --speaker 2 --out audio/taste
+
 `--speaker` は3話者モデルの話者ID（0=御丹宮くるみ / 1=夏目悠李 / 2=波音リツ）。
 `--transpose` で半音単位の移調、`--tempo` で音長の倍率を変えられる。
 
@@ -39,6 +46,7 @@
 
 クラリネット版は1行あたり3〜5モーラ余るので、自動割当では早口になる。
 気になる場合は歌詞側を音符数に合わせるか、行ごとの割当を手で与える必要がある。
+`index2.html` の二次対策ソングは1行7モーラで作ってあり、11番中10番が1対1で収まる。
 
 ## 注意
 

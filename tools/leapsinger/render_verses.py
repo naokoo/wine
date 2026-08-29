@@ -32,7 +32,11 @@ from leap_frontend import (build_f0, fit_notes, load_kana_table,  # noqa: E402
 
 # ── index.html から譜面を取り出す ────────────────────────────────────────
 def parse_index(path: str) -> dict:
-    """index.html の NOTE / MELODY_* / SONGS から、曲・番・行の歌詞と音符列を取り出す。"""
+    """index.html / index2.html の NOTE / MELODY_* / SONGS から、曲・番・行の歌詞と音符列を取り出す。
+
+    曲とメロディの対応は、SONGS の各曲の `melody:"TWINKLE"` を見る。
+    それが無い古い書き方（index.html）は下の別名表で解決する。
+    """
     src = open(path, encoding="utf-8").read()
 
     notes = {k: float(v) for k, v in re.findall(r"(\w+):(\d+\.\d+)",
@@ -40,20 +44,23 @@ def parse_index(path: str) -> dict:
     qtr = float(re.search(r"const QTR=([\d.]+)", src).group(1))
     last = float(re.search(r"LASTNOTE=([\d.]+)", src).group(1))
 
-    def melody(name: str) -> list[list[str]]:
-        block = re.search(rf"const {name}=\[(.*?)\n\];", src, re.S).group(1)
-        return [re.findall(r'"(\w+)"', row) for row in re.findall(r"\[(.*?)\]", block, re.S)]
-
-    melodies = {"twinkle": melody("MELODY_TWINKLE"), "clarinet": melody("MELODY_CLAR")}
+    all_melodies = {
+        name: [re.findall(r'"(\w+)"', row) for row in re.findall(r"\[(.*?)\]", block, re.S)]
+        for name, block in re.findall(r"const MELODY_(\w+)=\[(.*?)\n\];", src, re.S)
+    }
+    alias = {"twinkle": "TWINKLE", "clarinet": "CLAR"}      # melody: を持たない曲の対応
 
     songs_block = re.search(r"const SONGS=\{(.*?)\n\};", src, re.S).group(1)
     songs: dict[str, list[dict]] = {}
-    for key in ("twinkle", "clarinet"):
-        m = re.search(rf"\n  {key}:\{{(.*?)\n  \}},", songs_block, re.S)
-        if not m:
-            continue
+    melodies: dict[str, list[list[str]]] = {}
+    for key, body in re.findall(r"\n  (\w+):\{(.*?)\n  \},", songs_block, re.S):
+        m = re.search(r'melody:"(\w+)"', body)
+        name = m.group(1) if m else alias.get(key, key.upper())
+        if name not in all_melodies:
+            raise KeyError(f"{key} のメロディ MELODY_{name} が見つかりません")
+        melodies[key] = all_melodies[name]
         verses: list[dict] = []
-        for token, value in re.findall(r'(?<![A-Za-z_])(title|t):"([^"]*)"', m.group(1)):
+        for token, value in re.findall(r'(?<![A-Za-z_])(title|t):"([^"]*)"', body):
             if token == "title":
                 verses.append({"title": value, "lines": []})
             elif verses:
@@ -139,7 +146,7 @@ def main() -> int:
     ap.add_argument("--leapsinger", default=os.environ.get("LEAPSINGER_DIR", ""),
                     help="LeapSinger のクローン先")
     ap.add_argument("--ckpt", help="学習済み音響モデル（Release の .pth）")
-    ap.add_argument("--song", default="twinkle", choices=["twinkle", "clarinet"])
+    ap.add_argument("--song", default="twinkle", help="曲キー（index.html: twinkle/clarinet, index2.html: taste）")
     ap.add_argument("--speaker", type=int, default=2, help="話者ID（3話者モデル: 0/1/2）")
     ap.add_argument("--transpose", type=float, default=0.0, help="半音単位の移調")
     ap.add_argument("--tempo", type=float, default=1.0, help="音長の倍率（大きいほど遅い）")

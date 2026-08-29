@@ -75,6 +75,23 @@ details.acc[open] summary::after{content:"－"}
 .step-num{font-family:"Shippori Mincho",serif;font-weight:800;color:var(--gold);flex:0 0 auto}
 .tl{font-size:.85rem;color:#5d5350}
 .tl b{color:var(--bordeaux)}
+/* 暗記ソング */
+.verse{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:14px}
+.verse-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.verse-title{font-family:"Shippori Mincho",serif;font-weight:800;color:var(--wine);font-size:1.02rem;letter-spacing:.06em}
+.btn-play{font-family:inherit;font-weight:700;font-size:.85rem;cursor:pointer;border:1.5px solid var(--bordeaux);background:#fff;color:var(--bordeaux);border-radius:999px;padding:6px 16px;margin-left:auto;transition:all .12s}
+.btn-play:hover,.btn-play[aria-pressed="true"]{background:var(--bordeaux);color:#fff}
+.btn-play:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn-audio.has-audio{background:var(--bordeaux);color:#fff;border-color:var(--bordeaux)}
+.lyrics{display:grid;gap:3px;margin-bottom:6px}
+.lyric{font-family:"Shippori Mincho",serif;font-size:1.08rem;font-weight:600;line-height:1.5;padding:6px 12px;border-radius:8px;letter-spacing:.04em;transition:background .15s,color .15s}
+.lyric.amelo{color:var(--ink)}
+.lyric.bmelo{color:#6b4a52}
+.lyric.singing{background:var(--gold);color:#3a2a08;font-weight:800}
+.verse-point{background:#FBF6E8;border:1px dashed var(--gold);border-radius:8px;padding:9px 13px;margin-top:10px;font-size:.82rem;color:#5d5350}
+.verse-point b{color:var(--bordeaux)}
+.song-tip{font-size:.8rem;color:#9b9088;margin:6px 0 0}
+.tts-pre{white-space:pre-wrap;background:#F6F0E3;border-radius:8px;padding:12px;font-size:.8rem;line-height:1.8;font-family:"Zen Kaku Gothic New",sans-serif}
 footer{text-align:center;font-size:.75rem;color:#9b9088;padding:0 16px 36px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 @media (max-width:480px){.btn{width:100%}}
@@ -90,6 +107,7 @@ footer{text-align:center;font-size:.75rem;color:#9b9088;padding:0 16px 36px}
       <button class="tab" id="tab-fort" role="tab" aria-selected="false" aria-controls="p-fort">酒精強化・他の酒</button>
       <button class="tab" id="tab-essay" role="tab" aria-selected="false" aria-controls="p-essay">三次 論述</button>
       <button class="tab" id="tab-serve" role="tab" aria-selected="false" aria-controls="p-serve">三次 サービス実技</button>
+      <button class="tab" id="tab-song" role="tab" aria-selected="false" aria-controls="p-song">暗記ソング</button>
     </nav>
   </div>
 </header>
@@ -162,6 +180,24 @@ footer{text-align:center;font-size:.75rem;color:#9b9088;padding:0 16px 36px}
     </div>
     <div id="serve-body"></div>
   </section>
+
+  <!-- ============ 暗記ソング ============ -->
+  <section id="p-song" role="tabpanel" aria-labelledby="tab-song" class="hidden">
+    <div class="card">
+      <h2 class="sec">二次・三次 暗記ソング</h2>
+      <p class="lead">判別の型・コメントの順番・温度・サービス手順を、よく知られた童謡のメロディに乗せた替え歌で覚えます。原曲は著作権切れの民謡、歌詞はこのアプリのオリジナルです。<b>テイスティングは実物での訓練が主軸</b>、この曲は用語と型を固めるためのものです。</p>
+      <p class="song-tip" id="song-note2"></p>
+      <div class="chip-row">
+        <button class="btn ghost" id="btn-tts-copy2">この曲のTTS読みをコピー</button>
+      </div>
+      <details class="acc" style="margin-top:12px">
+        <summary>TTS読みテキストを表示（音声生成の貼り付け用）</summary>
+        <div class="acc-body"><pre class="tts-pre" id="tts-text2"></pre></div>
+      </details>
+      <p class="song-tip" style="text-align:left"><b>audio/taste/verse01.wav</b> のようにファイルを置くと、▶ を押すだけでその音声が再生されます（無ければメロディが鳴ります）。手動で選ぶ場合は各番の「♪ 音声」から。</p>
+    </div>
+    <div id="song-list2"></div>
+  </section>
 </main>
 <footer>二次9/28・三次11/9（2026年）。テイスティングは実物での訓練を主軸に、本アプリで用語と型を固めてください。</footer>
 
@@ -169,7 +205,7 @@ footer{text-align:center;font-size:.75rem;color:#9b9088;padding:0 16px 36px}
 "use strict";
 const $=id=>document.getElementById(id);
 /* ===== タブ ===== */
-const TABS={taste:"p-taste",fort:"p-fort",essay:"p-essay",serve:"p-serve"};
+const TABS={taste:"p-taste",fort:"p-fort",essay:"p-essay",serve:"p-serve",song:"p-song"};
 function switchTab(w){for(const[k,p]of Object.entries(TABS)){const s=k===w;$("tab-"+k).setAttribute("aria-selected",s);$(p).classList.toggle("hidden",!s);}}
 Object.keys(TABS).forEach(k=>$("tab-"+k).addEventListener("click",()=>switchTab(k)));
 
@@ -482,8 +518,359 @@ function renderServe(){
   w.appendChild(ev);
 }
 
+/* ===== 二次対策 暗記ソング（キラキラ星の替え歌） =====
+   メロディは1フレーズ7音×6フレーズ。歌詞は1行＝7モーラで作ってある。 */
+const NOTE={C:261.63,D:293.66,E:329.63,F:349.23,G:392.00,A:440.00,B:493.88,C5:523.25};
+const MELODY_TWINKLE=[
+  ["C","C","G","G","A","A","G"],
+  ["F","F","E","E","D","D","C"],
+  ["G","G","F","F","E","E","D"],
+  ["G","G","F","F","E","E","D"],
+  ["C","C","G","G","A","A","G"],
+  ["F","F","E","E","D","D","C"],
+];
+const QTR=0.40, LASTNOTE=0.70;
+/* 各行の b は メロディ区分（0=Aメロ／1=Bメロ）。表示色が変わる。 */
+
+const SONGS={
+  taste:{
+    label:"二次テイスティング 版",
+    melody:"TWINKLE",
+    note:"♪きらきらひかる… 1行＝7音。▶ でメロディが鳴り、歌詞が1行ずつ光ります。",
+    audio:true,
+    verses:[
+      {title:"① 白の型 〜SB と 樽シャルドネ〜",
+       lines:[
+         {t:"くさと かんきつ",b:0},
+         {t:"シャープな さんみ",b:0},
+         {t:"たるが なければ",b:1},
+         {t:"ソーヴィニヨンだ",b:1},
+         {t:"たるの ヴァニラは",b:0},
+         {t:"シャルドネ のあじ",b:0}
+       ],
+       point:"淡い外観＋青草・柑橘＋シャープな酸で<b>樽香なし</b>＝ソーヴィニヨン・ブラン。やや濃い色＋ヴァニラ/トーストの樽香＋高めのアルコール＝<b>樽シャルドネ</b>。白の判別はまず樽の有無。"},
+      {title:"② 白の型 〜リースリング と 甲州〜",
+       lines:[
+         {t:"ていアルコール",b:0},
+         {t:"さんみが たかい",b:0},
+         {t:"リースリングだ",b:1},
+         {t:"ぜんぶ ひかえめ",b:1},
+         {t:"うすい こうしゅう",b:0},
+         {t:"にほんの しろだ",b:0}
+       ],
+       point:"<b>低アルコールなのに酸が高く余韻が長い＝リースリング</b>（ミネラル・ペトロール香）。香りも味も全体に控えめで淡い＝<b>甲州</b>。「特徴が薄いのが特徴」。生産国は日本。"},
+      {title:"③ 赤の型 〜ピノ と ベーリーA〜",
+       lines:[
+         {t:"いろが うすくて",b:0},
+         {t:"タンニン かるい",b:0},
+         {t:"バラと いちごは",b:1},
+         {t:"ピノ・ノワールだ",b:1},
+         {t:"あめの かおりは",b:0},
+         {t:"ベーリーエーだ",b:0}
+       ],
+       point:"<b>色が淡いのにタンニンが弱い赤</b>はピノかMBA。バラ・紅茶・赤系果実・腐葉土＝<b>ピノ・ノワール</b>。イチゴキャンディ／綿菓子様の甘い香り＝<b>マスカット・ベーリーA</b>（日本）。"},
+      {title:"④ 赤の型 〜カベルネ・シラー・ネッビオーロ〜",
+       lines:[
+         {t:"こくて タンニン",b:0},
+         {t:"ピーマンは カベ",b:0},
+         {t:"くろこしょう なら",b:1},
+         {t:"シラーの かおり",b:1},
+         {t:"バラと しぶみで",b:0},
+         {t:"ネッビオーロだ",b:0}
+       ],
+       point:"濃い色＋濃縮感＋力強いタンニンが大前提。<b>ピーマン様＝カベルネ</b>、<b>黒胡椒のスパイス＝シラー／シラーズ</b>。色は淡〜中なのに<b>バラ＋高い酸＋強いタンニン＝ネッビオーロ</b>。"},
+      {title:"⑤ コメントの順番",
+       lines:[
+         {t:"がいかん いろと",b:0},
+         {t:"こさと ねんせい",b:0},
+         {t:"かおり ていどと",b:1},
+         {t:"つよさ じゅくせい",b:1},
+         {t:"あじは あまから",b:0},
+         {t:"さいごに ひんしゅ",b:0}
+       ],
+       point:"解答は<b>外観（色調→濃淡→粘性）→香り（程度→強さ・質→凝縮/成熟度）→味わい（甘辛→酸→タンニン→アルコール→余韻）→品種・生産国・収穫年→温度・グラス</b>の順。主な香り以外は各1つだけ選ぶ。"},
+      {title:"⑥ 判別の初手",
+       lines:[
+         {t:"まずは いろから",b:0},
+         {t:"つぎは タンニン",b:0},
+         {t:"しろなら たるか",b:1},
+         {t:"アルコールかん",b:1},
+         {t:"あかは しぶさだ",b:0},
+         {t:"これで はんぶん",b:0}
+       ],
+       point:"初手は<b>色の濃淡</b>と<b>タンニン／酸の強弱</b>。白は<b>樽香の有無とアルコール感</b>で二分。ここまでで候補は半分に絞れる。迷ったら典型用語に寄せる。"},
+      {title:"⑦ 温度 と グラス",
+       lines:[
+         {t:"しろは はちから",b:0},
+         {t:"じゅうどぐらいだ",b:0},
+         {t:"たるは じゅういち",b:1},
+         {t:"ピノは じゅうよん",b:1},
+         {t:"フルは じゅうろく",b:0},
+         {t:"こいほど グラス",b:0}
+       ],
+       point:"軽い白（SB／リースリング／甲州）<b>8〜10℃</b>、樽シャルドネとMBA<b>11〜13℃</b>、ピノ<b>14〜16℃</b>、フルボディ赤（カベルネ／シラー）<b>16〜18℃</b>。<b>濃く強いほどグラスは大きく</b>。"},
+      {title:"⑧ 酒精強化 〜シェリー〜",
+       lines:[
+         {t:"うすい レモンで",b:0},
+         {t:"こうぼの かおり",b:0},
+         {t:"からくちの フィノ",b:1},
+         {t:"くるみ カラメル",b:1},
+         {t:"オロロソは こい",b:0},
+         {t:"くろい ごくあま",b:0}
+       ],
+       point:"<b>白ワイン並みに淡いのにアルコールが強く、パン酵母・アーモンド・塩気＝フィノ／マンサニーリャ</b>（極辛口・15〜16%）。濃い琥珀でくるみ・レーズンの酸化香＝<b>オロロソ</b>。黒褐色で極甘＝<b>PX（ペドロ・ヒメネス）</b>。"},
+      {title:"⑨ 酒精強化 〜ポート・マデイラ・他〜",
+       lines:[
+         {t:"あかい あまくち",b:0},
+         {t:"つよけりゃ ポート",b:0},
+         {t:"こげた カラメル",b:1},
+         {t:"それは マデイラ",b:1},
+         {t:"ハーブ リキュール",b:0},
+         {t:"とうなし じょうりゅう",b:0}
+       ],
+       point:"<b>赤い甘口＋アルコール19〜20%＝ポート</b>（酸化熟成のトゥニーは褐色でナッツ）。<b>焦げ・カラメル様の加熱香（マデリゼ）＝マデイラ</b>。薬草・ハーブが複雑＝<b>リキュール（混成酒）</b>。糖の甘みが無く強い揮発感＋40%前後＝<b>蒸留酒（スピリッツ）</b>。"},
+      {title:"⑩ サービス 〜抜栓とデカンタ〜",
+       lines:[
+         {t:"ボトルを ていじ",b:0},
+         {t:"シールを きって",b:0},
+         {t:"コルクを ぬいて",b:1},
+         {t:"においで ブショネ",b:1},
+         {t:"おりが あるなら",b:0},
+         {t:"ひかりに かざす",b:0}
+       ],
+       point:"提示→キャップシールを上端の下から一周→<b>コルク上面を拭く</b>→垂直にスクリュー→静かに抜栓→<b>ブショネ点検</b>→瓶口を拭く→ホストテイスティング。澱のある熟成赤は<b>光源に瓶肩をかざし、澱が瓶口に来る手前で止める</b>。"},
+      {title:"⑪ 三次 論述の型",
+       lines:[
+         {t:"けつろん さきに",b:0},
+         {t:"つぎに りゆうを",b:0},
+         {t:"さいご ていあん",b:1},
+         {t:"おんど と グラス",b:1},
+         {t:"デカンタ するか",b:0},
+         {t:"みっつに まとめ",b:0}
+       ],
+       point:"<b>結論→理由→提案</b>の3部構成。理由はワインの特徴（酸・タンニン・果実味）と料理／場面を対応づける。提案は<b>提供温度・グラス・デカンタージュの要否</b>まで実務に落とす。キーワードを3〜4個先に書き出す。"},
+    ],
+  },
+};
+let currentSong="taste";
+let audioCtx=null, songTimers=[], playingVerse=-1, curAudio=null;
+const customAudio={taste:{}};
+const autoAudio={taste:{}};
+const AUDIO_DIR="audio";
+/* 命名規約: audio/{曲キー}/verse01.wav 〜（2桁ゼロ埋め）。この位置に置くと自動再生。 */
+function audioPathFor(key,vi){ return `${AUDIO_DIR}/${key}/verse${String(vi+1).padStart(2,"0")}.wav`; }
+function probeVerseAudio(key,vi){
+  if(customAudio[key][vi]) return;
+  const path=audioPathFor(key,vi);
+  /* fetchはfile://直開きでブロックされるため、audio要素で存在確認する。 */
+  try{
+    const probe=new Audio();
+    probe.preload="metadata";
+    probe.addEventListener("loadedmetadata",()=>{
+      customAudio[key][vi]=path; autoAudio[key][vi]=true;
+      const chip=$("audio-set-"+vi);
+      if(chip && currentSong===key){ chip.textContent="♪ 自動検出（フォルダ）"; chip.classList.add("has-audio"); }
+    },{once:true});
+    probe.addEventListener("error",()=>{},{once:true});
+    probe.src=path;
+  }catch(e){ /* Audioが使えない環境。手動選択にフォールバック。 */ }
+}
+/* TTS読み（記号を落として読ませる用） */
+const NUM_JA=["","いち","に","さん","よん","ご","ろく","なな","はち","きゅう","じゅう","じゅういち","じゅうに"];
+function verseSegments(key,vi){
+  return SONGS[key].verses[vi].lines.map(l=>l.t.replace(/\s+/g,"、")+"。");
+}
+/* TTSが読み間違えやすい略語をかなに開く */
+function ttsRep(t){ return t.replace(/ベーリーA/g,"ベーリーエー").replace(/SB/g,"エスビー").replace(/PX/g,"ピーエックス"); }
+function ttsText(key){
+  const out=[];
+  SONGS[key].verses.forEach((v,i)=>{
+    const title=ttsRep(v.title).replace(/^[①-⑳]\s*/,"").replace(/[〜~]/g,"").replace(/\s+/g,"、").replace(/、+/g,"、").replace(/、$/,"");
+    out.push(`だい${NUM_JA[i+1]}ばん。${title}。`);
+    verseSegments(key,i).forEach(s=>out.push(s));
+    out.push("");
+  });
+  return out.join("\n");
+}
+function ttsTextVerse(key,vi){ return verseSegments(key,vi).join("\n"); }
+/* セグメントの発話時間の重み（モーラ近似）。読点=短ポーズ、句点=長ポーズ。 */
+function segWeight(s){
+  let w=0;
+  for(const ch of s){
+    if(ch==="。") w+=2.0;
+    else if(ch==="、") w+=1.0;
+    else if("ゃゅょャュョぁぃぅぇぉッっ".includes(ch)) w+=0.4;
+    else if(ch==="・"||ch===" ") w+=0.3;
+    else if(ch==="ー") w+=0.8;
+    else w+=1.0;
+  }
+  return w;
+}
+function computeHighlightSchedule(key,vi,dur){
+  const weights=verseSegments(key,vi).map(segWeight);
+  const total=weights.reduce((a,b)=>a+b,0);
+  const sched=[]; let acc=0;
+  weights.forEach((w,si)=>{ sched.push({t:acc/total*dur,lineIdx:si}); acc+=w; });
+  return sched;
+}
+function fallbackCopy(text){
+  try{
+    const ta=document.createElement("textarea");
+    ta.value=text; document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy");
+    document.body.removeChild(ta);
+  }catch(e){ /* detailsから手動選択できる */ }
+}
+function copyText(text,btn,label){
+  const done=()=>{ if(!btn) return; const orig=btn.textContent; btn.textContent=label; setTimeout(()=>{btn.textContent=orig;},1400); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(()=>{fallbackCopy(text);done();});
+  } else { fallbackCopy(text); done(); }
+}
+function pickAudio(vi){
+  const inp=document.createElement("input");
+  inp.type="file"; inp.accept="audio/*";
+  inp.addEventListener("change",()=>{
+    const f=inp.files && inp.files[0];
+    if(!f) return;
+    if(customAudio[currentSong][vi]){ try{URL.revokeObjectURL(customAudio[currentSong][vi]);}catch(e){} }
+    customAudio[currentSong][vi]=URL.createObjectURL(f);
+    const chip=$("audio-set-"+vi);
+    if(chip){ chip.textContent="♪ "+(f.name.length>14?f.name.slice(0,13)+"…":f.name); chip.classList.add("has-audio"); }
+  });
+  inp.click();
+}
+function melodyOf(){ return MELODY_TWINKLE; }
+function renderSong(){
+  const song=SONGS[currentSong];
+  $("song-note2").textContent=song.note;
+  const wrap=$("song-list2"); wrap.innerHTML="";
+  song.verses.forEach((v,vi)=>{
+    const card=document.createElement("div"); card.className="verse";
+    const head=document.createElement("div"); head.className="verse-head";
+    head.innerHTML=`<span class="verse-title">${v.title}</span>`;
+    const btn=document.createElement("button");
+    btn.className="btn-play"; btn.id="play-"+vi;
+    btn.setAttribute("aria-pressed","false"); btn.innerHTML="▶ メロディ再生";
+    btn.addEventListener("click",()=>toggleVerse(vi));
+    head.appendChild(btn);
+    const ab=document.createElement("button");
+    ab.className="chip btn-audio"; ab.id="audio-set-"+vi;
+    if(autoAudio[currentSong][vi]){ ab.textContent="♪ 自動検出（フォルダ）"; ab.classList.add("has-audio"); }
+    else if(customAudio[currentSong][vi]){ ab.textContent="♪ 音声設定済み"; ab.classList.add("has-audio"); }
+    else { ab.textContent="♪ 音声"; }
+    ab.addEventListener("click",()=>pickAudio(vi));
+    head.appendChild(ab);
+    const cb=document.createElement("button");
+    cb.className="chip"; cb.id="copy-verse-"+vi; cb.textContent="この番の読みをコピー";
+    cb.addEventListener("click",()=>copyText(ttsTextVerse(currentSong,vi),cb,"コピー済み"));
+    head.appendChild(cb);
+    card.appendChild(head);
+    const ly=document.createElement("div"); ly.className="lyrics";
+    v.lines.forEach((line,li)=>{
+      const p=document.createElement("div");
+      p.className="lyric "+(line.b?"bmelo":"amelo");
+      p.id=`lyric-${vi}-${li}`;
+      p.textContent=line.t;
+      ly.appendChild(p);
+    });
+    card.appendChild(ly);
+    const pt=document.createElement("div"); pt.className="verse-point";
+    pt.innerHTML=`<b>覚えるポイント：</b>${v.point}`;
+    card.appendChild(pt);
+    wrap.appendChild(card);
+  });
+  $("tts-text2").textContent=ttsText(currentSong);
+  song.verses.forEach((_,vi)=>probeVerseAudio(currentSong,vi));
+}
+$("btn-tts-copy2").addEventListener("click",()=>copyText(ttsText(currentSong),$("btn-tts-copy2"),"コピーしました"));
+
+function clearSongTimers(){ songTimers.forEach(t=>clearTimeout(t)); songTimers=[]; }
+function clearHighlights(){ document.querySelectorAll(".lyric.singing").forEach(el=>el.classList.remove("singing")); }
+function stopSong(){
+  clearSongTimers(); clearHighlights();
+  if(curAudio){ try{curAudio.pause();}catch(e){} curAudio=null; }
+  if(playingVerse>=0){
+    const b=$("play-"+playingVerse);
+    if(b){ b.setAttribute("aria-pressed","false"); b.innerHTML="▶ メロディ再生"; }
+  }
+  playingVerse=-1;
+}
+function toggleVerse(vi){
+  if(playingVerse===vi){ stopSong(); return; }
+  stopSong();
+  playingVerse=vi;
+  const btn=$("play-"+vi);
+  btn.setAttribute("aria-pressed","true");
+  btn.innerHTML="■ 停止";
+  const url=customAudio[currentSong][vi];
+  if(url){ playCustom(vi,url); } else { playMelody(vi); }
+}
+/* 用意した音声を再生。ハイライトは各行の文字量に比例配分する。 */
+function playCustom(vi,url){
+  try{
+    curAudio=new Audio(url);
+    const key=currentSong;
+    curAudio.addEventListener("loadedmetadata",()=>{
+      const nLines=SONGS[key].verses[vi].lines.length;
+      const dur=(isFinite(curAudio.duration)&&curAudio.duration>0)?curAudio.duration:nLines*2.5;
+      computeHighlightSchedule(key,vi,dur).forEach(({t,lineIdx})=>{
+        songTimers.push(setTimeout(()=>{
+          clearHighlights();
+          const el=$(`lyric-${vi}-${lineIdx}`);
+          if(el) el.classList.add("singing");
+        }, t*1000));
+      });
+      songTimers.push(setTimeout(stopSong, dur*1000+300));
+    });
+    curAudio.addEventListener("ended",stopSong);
+    const p=curAudio.play();
+    if(p&&p.catch) p.catch(()=>{});
+  }catch(e){ playMelody(vi); }
+}
+/* メロディ再生＋行ハイライト */
+function playMelody(vi){
+  if(!audioCtx){
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(AC) audioCtx=new AC();
+  }
+  if(audioCtx && audioCtx.state==="suspended") audioCtx.resume();
+  const phrases=melodyOf();
+  const t0 = audioCtx ? audioCtx.currentTime+0.06 : 0;
+  let acc=0;
+  phrases.forEach((phrase,pi)=>{
+    const phraseStart=acc;
+    if(audioCtx){
+      phrase.forEach((nm,ni)=>{
+        const start=t0+phraseStart+ni*QTR;
+        const dur=(ni===phrase.length-1)?LASTNOTE:QTR;
+        playNote(NOTE[nm],start,dur*0.92);
+      });
+    }
+    songTimers.push(setTimeout(()=>{
+      clearHighlights();
+      const el=$(`lyric-${vi}-${pi}`);
+      if(el) el.classList.add("singing");
+    }, phraseStart*1000));
+    acc += (phrase.length-1)*QTR + LASTNOTE + 0.12;
+  });
+  songTimers.push(setTimeout(stopSong, acc*1000+200));
+}
+function playNote(freq,startTime,dur){
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  osc.type="triangle";
+  osc.frequency.value=freq;
+  gain.gain.setValueAtTime(0.0001,startTime);
+  gain.gain.exponentialRampToValueAtTime(0.18,startTime+0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001,startTime+dur);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(startTime);
+  osc.stop(startTime+dur+0.02);
+}
+
 /* 初期描画 */
-renderSampleChips(); renderProfiles(); renderFort(); renderFQ(); renderEssay(); renderServe();
+renderSampleChips(); renderProfiles(); renderFort(); renderFQ(); renderEssay(); renderServe(); renderSong();
 </script>
 </body>
 </html>
