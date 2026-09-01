@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# LeapSinger 関連のローカル生成物（音声はアプリ用の audio/ 以下だけを追跡する）
+/leapsinger_howto.wav
+/leapsinger_howto.m4a
+*.pth
