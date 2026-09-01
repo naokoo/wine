@@ -9,6 +9,7 @@
 | `leap_frontend.py` | かな歌詞＋音符 → 音素・音素ごとのフレーム数・F0カーブ |
 | `render_verses.py` | `index.html` から譜面を読み、検査／合成を行うCLI |
 | `kana2phonemes.table` | かな→音素表（LeapSinger からの複製。下記参照） |
+| `songs/*.json` | HTML と関係ない曲の譜面（歌詞＋メロディ） |
 
 ## 使い方
 
@@ -36,6 +37,20 @@
 
 `--speaker` は3話者モデルの話者ID（0=御丹宮くるみ / 1=夏目悠李 / 2=波音リツ）。
 `--transpose` で半音単位の移調、`--tempo` で音長の倍率を変えられる。
+
+## HTML と関係ない曲を歌わせる
+
+`songs/` に置いた JSON 譜面を `--score` で渡すと、`index.html` を経由せずに合成できる。
+`--merge` を付けると全番が1ファイルにまとまる（16bit なので共有しやすい）。
+
+    python3 tools/leapsinger/render_verses.py \
+      --score tools/leapsinger/songs/leapsinger_howto.json \
+      --leapsinger ~/src/LeapSinger \
+      --ckpt ~/src/LeapSinger/LeapSinger_models/3speaker_gan2d.pth \
+      --merge leapsinger_howto.wav
+
+`leapsinger_howto.json` は LeapSinger 自身の使い方を歌にしたもの（紹介用）。
+JSON の形式は `load_score()` のドキュメント文字列を参照。
 
 ## 音符の割り当て
 

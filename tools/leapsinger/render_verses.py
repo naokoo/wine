@@ -11,6 +11,13 @@
         --ckpt ~/src/LeapSinger/3speaker_gan2d.pth \
         --song twinkle --speaker 2 --out audio/twinkle
 
+    # 3) HTML と関係ない曲（JSON譜面）を1ファイルにまとめて合成する
+    python3 tools/leapsinger/render_verses.py \
+        --score tools/leapsinger/songs/leapsinger_howto.json \
+        --leapsinger ~/src/LeapSinger \
+        --ckpt ~/src/LeapSinger/LeapSinger_models/3speaker_gan2d.pth \
+        --merge leapsinger_howto.wav
+
 LeapSinger: https://github.com/wavtechyukky/LeapSinger （コードは MIT。学習済みモデルと
 歌声DBは各DBの規約に従うこと。配布物の CREDITS.txt を必ず確認する）
 """
@@ -28,6 +35,26 @@ sys.path.insert(0, HERE)
 
 from leap_frontend import (build_f0, fit_notes, load_kana_table,  # noqa: E402
                            notes_to_phonemes, resolve_mora, split_mora)
+
+
+# 音名→周波数（JSON譜面用。index.html からは NOTE を読み取る）
+DEFAULT_NOTES = {"C": 261.63, "D": 293.66, "E": 329.63, "F": 349.23, "G": 392.00,
+                 "A": 440.00, "B": 493.88, "C5": 523.25, "D5": 587.33, "E5": 659.26}
+
+
+def load_score(path: str) -> dict:
+    """JSONの譜面を parse_index と同じ形に読み替える。
+
+    {"key": "howto", "qtr": 0.4, "last": 0.7,
+     "melody": [["C","C","G","G","A","A","G"], ...],
+     "verses": [{"title": "...", "lines": ["...", ...], "point": "..."}]}
+    """
+    score = json.load(open(path, encoding="utf-8"))
+    key = score.get("key", os.path.splitext(os.path.basename(path))[0])
+    notes = dict(DEFAULT_NOTES, **score.get("notes", {}))
+    verses = [{"title": v["title"], "lines": list(v["lines"])} for v in score["verses"]]
+    return {"notes": notes, "qtr": score.get("qtr", 0.40), "last": score.get("last", 0.70),
+            "melodies": {key: score["melody"]}, "songs": {key: verses}, "key": key}
 
 
 # ── index.html から譜面を取り出す ────────────────────────────────────────
@@ -118,7 +145,9 @@ def render(data: dict, table, args) -> None:
     model, cfg = load_acoustic(args.ckpt)
     voc = load_vocoder(os.path.join(args.leapsinger, "checkpoints", "nhv_v3.onnx"))
     phrases = data["melodies"][args.song]
-    os.makedirs(args.out, exist_ok=True)
+    if not args.merge:
+        os.makedirs(args.out, exist_ok=True)
+    merged = []
 
     for vi, verse in enumerate(data["songs"][args.song], 1):
         chunks = []
@@ -134,9 +163,19 @@ def render(data: dict, table, args) -> None:
             mel = infer_mel(model, item, num_steps=cfg.get("num_steps", 1))
             chunks.append(mel_to_wav(voc, mel, item["f0_logf0"], item["uv"]))
         wav = np.concatenate(chunks)
+        if args.merge:
+            merged.append(wav)
+            merged.append(np.zeros(int(44100 * 0.7), dtype=wav.dtype))   # 番と番の間
+            print(f"{vi:2d}. {verse['title']}  {len(wav) / 44100:.1f}s")
+            continue
         path = os.path.join(args.out, f"verse{vi:02d}.wav")
         sf.write(path, wav, 44100)
         print(f"{path}  {len(wav) / 44100:.1f}s")
+
+    if args.merge:
+        wav = np.concatenate(merged)
+        sf.write(args.merge, wav, 44100, subtype="PCM_16")
+        print(f"\n{args.merge}  {len(wav) / 44100:.1f}s  ({os.path.getsize(args.merge) / 1e6:.1f} MB)")
 
 
 def main() -> int:
@@ -151,13 +190,19 @@ def main() -> int:
     ap.add_argument("--transpose", type=float, default=0.0, help="半音単位の移調")
     ap.add_argument("--tempo", type=float, default=1.0, help="音長の倍率（大きいほど遅い）")
     ap.add_argument("--out", default=os.path.join(REPO, "audio", "twinkle"))
+    ap.add_argument("--score", help="JSONの譜面（--index の代わり。HTMLと無関係な曲用）")
+    ap.add_argument("--merge", help="全番を1つのwavにまとめて書き出す（16bit）")
     ap.add_argument("--check", action="store_true", help="歌詞と音符の対応だけ検査する")
     args = ap.parse_args()
 
     dict_path = (os.path.join(args.leapsinger, "dict", "kana2phonemes.table")
                  if args.leapsinger else os.path.join(HERE, "kana2phonemes.table"))
     table = load_kana_table(dict_path)
-    data = parse_index(args.index)
+    if args.score:
+        data = load_score(args.score)
+        args.song = data["key"]
+    else:
+        data = parse_index(args.index)
 
     if args.check or not args.ckpt:
         if not args.check:
